@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>METRA SCAN — National Product Verification Portal</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css?v=4.0">
+  <link rel="stylesheet" href="css/responsive.css?v=4.0">
+
+  <!-- Official Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- Main Responsive Application Container -->
+  <div class="app-container">
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- MAIN APP SCREENS -->
+    <main class="app-main" id="app-main">
+
+      <!-- ===================================================================
+           SCREEN 1: ROLE SELECTION & LANDING EXPERIENCE
+           =================================================================== -->
+      <section class="app-screen active" id="screen-role-selection">
+
+        <!-- ══════════════════════════════════════════════
+             PHASE 1 — HERO SPLASH LANDING
+             ══════════════════════════════════════════════ -->
+        <div class="ms-splash" id="ms-splash">
+
+          <!-- ── Top Government Header ── -->
+          <header class="ms-header">
+            <div class="ms-gov-identity">
+              <img src="assets/logo/emblem-official.png" alt="Emblem of India" class="ms-emblem">
+              <div class="ms-header-sep"></div>
+              <div class="ms-gov-text">
+                <span class="ms-gov-main">Government of India</span>
+                <span class="ms-gov-sub">Department of Consumer Affairs • Legal Metrology</span>
+              </div>
+            </div>
+          </header>
+
+          <!-- Text block sits just below the header, over the top of the image -->
+          <div class="ms-headline-overlay">
+            <h1 class="ms-title" id="ms-splash-title" aria-label="METRA SCAN">
+              <span class="ms-title-line1">METRA</span>
+              <span class="ms-title-line2">SCAN</span>
+            </h1>
+            <p class="ms-subtitle">National Product<br>Verification Portal</p>
+            <div class="ms-tricolor">
+              <span class="ms-tc-saffron"></span>
+              <span class="ms-tc-white"></span>
+              <span class="ms-tc-green"></span>
+            </div>
+          </div>
+
+          <!-- Spacer — image fills the middle -->
+          <div class="ms-image-spacer"></div>
+
+          <!-- ── Bottom bar: tagline + CTA ── -->
+          <div class="ms-footer">
+            <div class="ms-tagline">
+              <p class="ms-tagline-text"><em>Verify Every Product.<br>Protect Every Right.</em></p>
+              <div class="ms-tagline-stripe">
+                <span class="ms-tc-saffron small"></span>
+                <span class="ms-tc-green small"></span>
+              </div>
+            </div>
+            <button class="ms-cta-circle" id="btn-ms-enter" title="Enter Portal" aria-label="Enter MetraScan Portal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/>
+                <path d="M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             PHASE 2 — ROLE SELECTION (hidden initially)
+             ══════════════════════════════════════════════ -->
+        <div class="ms-roles-view" id="ms-roles-view">
+          <!-- National Tricolor Accent Bar -->
+          <div class="role-tricolor-bar"></div>
+
+          <!-- Official Government Portal Top Bar -->
+          <header class="role-top-nav">
+            <div class="role-top-gov-badge">
+              <img src="assets/logo/emblem.svg" alt="Emblem of India" class="role-gov-emblem">
+              <div class="role-gov-titles">
+                <span class="role-gov-country">GOVERNMENT OF INDIA</span>
+                <span class="role-gov-dept">Department of Consumer Affairs • Legal Metrology Division</span>
+              </div>
+            </div>
+            <div class="role-top-actions">
+              <div class="role-system-status" title="Central Packaged Commodity Database online">
+                <span class="pulse-dot"></span>
+                <span class="status-label">PCR 2011 Registry Live</span>
+              </div>
+              <a href="tel:1915" class="role-help-pill" title="National Consumer Helpline">
+                <span>📞</span>
+                <span>NCH 1915</span>
+              </a>
+            </div>
+          </header>
+
+          <!-- Main Content Canvas -->
+          <div class="role-screen-wrapper">
+            <!-- Ambient Lighting Backdrops -->
+            <div class="role-ambient-glow role-glow-1"></div>
+            <div class="role-ambient-glow role-glow-2"></div>
+
+            <!-- Back to splash button -->
+            <button class="ms-back-btn" id="btn-ms-back" title="Back to Home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+              </svg>
+              Back
+            </button>
+
+            <!-- Hero Section -->
+            <div class="role-header-hero">
+              <div class="role-authority-badge">
+                <span class="authority-badge-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </span>
+                <span>National Packaged Commodity Portal</span>
+                <span class="authority-badge-dot">•</span>
+                <span class="authority-badge-rule">Legal Metrology Act, 2009</span>
+              </div>
+
+              <div class="role-brand-showcase">
+                <img src="assets/logo/metrascan-logo-new.jpg" alt="MetraScan — Measure. Verify. Ensure." class="role-hero-logo-svg">
+              </div>
+
+              <h1 class="role-hero-title">
+                Verify Every Product. <br>
+                <span class="text-gradient-hero">Protect Every Right.</span>
+              </h1>
+
+              <p class="role-hero-desc">
+                India's central portal for instant verification of mandatory statutory declarations, fair MRP &amp; unit sale pricing, anti-counterfeiting MetraSeal™ verification, and official enforcement audits.
+              </p>
+
+              <!-- Live Stats Ribbon -->
+              <div class="role-stats-ribbon">
+                <div class="role-stat-chip">
+                  <span class="stat-chip-num">4.8M+</span>
+                  <span class="stat-chip-label">Packaged Goods</span>
+                </div>
+                <div class="role-stat-divider"></div>
+                <div class="role-stat-chip">
+                  <span class="stat-chip-num">8 / 8</span>
+                  <span class="stat-chip-label">Rule 6(1) Checks</span>
+                </div>
+                <div class="role-stat-divider"></div>
+                <div class="role-stat-chip">
+                  <span class="stat-chip-num">28 States</span>
+                  <span class="stat-chip-label">Enforcement Network</span>
+                </div>
+                <div class="role-stat-divider"></div>
+                <div class="role-stat-chip">
+                  <span class="stat-chip-num">100%</span>
+                  <span class="stat-chip-label">MetraSeal™ Protected</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dual Portal Cards -->
+            <div class="role-cards-container">
+              <!-- Ministry Official Card -->
+              <div class="role-card role-ministry" data-navigate="ministry-login">
+                <div class="role-card-banner role-card-banner-ministry">OFFICIAL LEGAL METROLOGY INSPECTORS</div>
+                <div class="role-card-top">
+                  <div class="role-icon-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                      <path d="M9 22v-4h6v4"/>
+                      <path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/>
+                      <path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/>
+                    </svg>
+                  </div>
+                  <div class="role-arrow" title="Enter Official Space">→</div>
+                </div>
+                <div class="role-card-body">
+                  <h2 class="role-title">Ministry &amp; Field Command</h2>
+                  <p class="role-desc">Department of Consumer Affairs surveillance platform. File statutory violations, log tamper-proof evidence, and issue signed MetraCerts.</p>
+                  <div class="role-feature-list">
+                    <div class="role-feature-item"><span class="feature-check feature-check-green">✓</span><span>5-Step Rule 12 &amp; Rule 5 Inspection Wizard</span></div>
+                    <div class="role-feature-item"><span class="feature-check feature-check-green">✓</span><span>Tamper-Proof Photo Evidence &amp; Seizures</span></div>
+                    <div class="role-feature-item"><span class="feature-check feature-check-green">✓</span><span>Live Compliance Pulse &amp; State Statistics</span></div>
+                    <div class="role-feature-item"><span class="feature-check feature-check-green">✓</span><span>Print-Ready Signed MetraCert™ Issuance</span></div>
+                  </div>
+                </div>
+                <div class="role-card-footer">
+                  <div class="role-btn-primary role-btn-ministry-primary">
+                    <span>Official Portal Sign In</span>
+                    <span class="role-btn-arrow">→</span>
+                  </div>
+                  <button type="button" class="role-btn-demo" id="btn-hero-ministry-demo" title="Instant Access as Insp. Rajesh Verma">🏛️ Instant Inspector Demo</button>
+                </div>
+              </div>
+
+              <!-- Consumer Portal Card -->
+              <div class="role-card role-consumer" data-navigate="consumer-login">
+                <div class="role-card-banner">FOR CITIZENS &amp; CONSUMERS</div>
+                <div class="role-card-top">
+                  <div class="role-icon-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 01-8 0"/>
+                    </svg>
+                  </div>
+                  <div class="role-arrow" title="Enter Consumer Space">→</div>
+                </div>
+                <div class="role-card-body">
+                  <h2 class="role-title">Consumer Portal</h2>
+                  <p class="role-desc">Verify packaged commodities before buying. Audit fair pricing, mandatory declarations, net quantity, and manufacturer credentials in seconds.</p>
+                  <div class="role-feature-list">
+                    <div class="role-feature-item"><span class="feature-check">✓</span><span>Camera Barcode &amp; MetraSeal™ QR Scanner</span></div>
+                    <div class="role-feature-item"><span class="feature-check">✓</span><span>Unit Sale Price (USP) &amp; Fair MRP Audit</span></div>
+                    <div class="role-feature-item"><span class="feature-check">✓</span><span>FSSAI Lic. &amp; Central Registry Cross-Check</span></div>
+                    <div class="role-feature-item"><span class="feature-check">✓</span><span>One-Tap Grievance Filing (NCH 1915)</span></div>
+                  </div>
+                </div>
+                <div class="role-card-footer">
+                  <div class="role-btn-primary">
+                    <span>Launch Consumer Portal</span>
+                    <span class="role-btn-arrow">→</span>
+                  </div>
+                  <button type="button" class="role-btn-demo" id="btn-hero-consumer-demo" title="Instant Access as Priya Sharma">⚡ Instant Citizen Demo</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Live Verification Showcase -->
+            <div class="role-showcase-section">
+              <div class="role-section-header">
+                <div class="role-section-badge">LIVE DATABASE SHOWCASE</div>
+                <h3 class="role-section-title">Explore Sample Commodity Verifications</h3>
+                <p class="role-section-subtitle">Click any commodity below to view real-time statutory audit &amp; compliance breakdown</p>
+              </div>
+              <div class="role-showcase-grid">
+                <div class="role-sample-card" data-navigate="consumer-verification" data-params='{"productId":"prod-001"}'>
+                  <div class="sample-card-badge status-verified"><span class="status-dot-green"></span> 98% COMPLIANT</div>
+                  <div class="sample-img-box"><img src="assets/images/product-oil.svg" alt="Groundnut Oil" class="sample-prod-img"></div>
+                  <div class="sample-info">
+                    <span class="sample-category">Edible Oils &amp; Fats</span>
+                    <h4 class="sample-name">NatureFresh Cold Pressed Groundnut Oil</h4>
+                    <div class="sample-meta"><span>Net Quantity: 1 Litre (910 g)</span><span>MRP: ₹245.00 (₹24.50 / 100ml)</span></div>
+                    <div class="sample-cta">View Audit Record →</div>
+                  </div>
+                </div>
+                <div class="role-sample-card" data-navigate="consumer-verification" data-params='{"productId":"prod-002"}'>
+                  <div class="sample-card-badge status-verified"><span class="status-dot-green"></span> 96% COMPLIANT</div>
+                  <div class="sample-img-box"><img src="assets/images/product-flour.svg" alt="Sharbati Atta" class="sample-prod-img"></div>
+                  <div class="sample-info">
+                    <span class="sample-category">Food Grains &amp; Flours</span>
+                    <h4 class="sample-name">Organic Whole Wheat Sharbati Atta</h4>
+                    <div class="sample-meta"><span>Net Quantity: 5 kg Net Weight</span><span>MRP: ₹380.00 (₹76.00 / kg)</span></div>
+                    <div class="sample-cta">View Audit Record →</div>
+                  </div>
+                </div>
+                <div class="role-sample-card sample-card-warning" data-navigate="consumer-verification" data-params='{"productId":"prod-003"}'>
+                  <div class="sample-card-badge status-violation"><span class="status-dot-red"></span> VIOLATION DETECTED</div>
+                  <div class="sample-img-box"><img src="assets/images/product-drink.svg" alt="Energy Drink" class="sample-prod-img"></div>
+                  <div class="sample-info">
+                    <span class="sample-category">Caffeinated Beverages</span>
+                    <h4 class="sample-name">VitalBoost Taurine Energy Drink</h4>
+                    <div class="sample-meta"><span class="text-danger-strong">Missing Unit Sale Price (USP)</span><span class="text-danger-strong">Consumer Helpline Unresponsive</span></div>
+                    <div class="sample-cta text-danger-strong">Inspect Violations →</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Compliance Pillars -->
+            <div class="role-pillars-section">
+              <div class="pillar-card">
+                <div class="pillar-icon">⚖️</div>
+                <h4 class="pillar-title">Legal Metrology Act, 2009</h4>
+                <p class="pillar-desc">Strict enforcement of Packaged Commodities Rules 2011. Mandates 8 statutory declarations on all pre-packaged retail commodities across India.</p>
+              </div>
+              <div class="pillar-card">
+                <div class="pillar-icon">🔒</div>
+                <h4 class="pillar-title">MetraSeal™ Anti-Counterfeiting</h4>
+                <p class="pillar-desc">Cryptographically signed digital seals cross-matched with the Central Packaged Commodity Database to prevent fake stickers and deceptive packaging.</p>
+              </div>
+              <div class="pillar-card">
+                <div class="pillar-icon">🇮🇳</div>
+                <h4 class="pillar-title">National Consumer Redressal</h4>
+                <p class="pillar-desc">Direct interface to National Consumer Helpline (NCH 1915) and INGRAM for rapid grievance escalation and official enforcement action.</p>
+              </div>
+            </div>
+
+            <!-- Official Government Portal Footer -->
+            <footer class="role-footer">
+              <div class="role-footer-top">
+                <div class="role-footer-brand">
+                  <img src="assets/logo/emblem.svg" alt="Govt Emblem" class="role-footer-emblem">
+                  <div class="role-footer-text">
+                    <strong>Department of Consumer Affairs</strong>
+                    <span>Ministry of Consumer Affairs, Food &amp; Public Distribution • Government of India</span>
+                  </div>
+                </div>
+                <div class="role-footer-badges">
+                  <span class="footer-sec-badge">🔒 256-bit TLS Encrypted</span>
+                  <span class="footer-sec-badge">🇮🇳 Digital India Initiative</span>
+                </div>
+              </div>
+              <div class="role-footer-bottom">
+                <p class="role-footer-legal">© 2026 MetraScan National Verification Portal. Built under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
+                <div class="role-footer-links">
+                  <span>Consumer Helpline: 1915</span><span>•</span>
+                  <span>Central Database Sync: Active</span><span>•</span>
+                  <span>v2.4.0 (PCR Compliant)</span>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 2: CONSUMER LOGIN & GOVERNMENT SSO ROUTING
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-login">
+        <div class="nfr-auth-wrapper">
+
+          <!-- Top Navigation Bar -->
+          <div class="nfr-auth-top-bar">
+            <button class="nfr-back-btn" data-navigate="role-selection" title="Back to home page">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <div class="nfr-lang-dropdown" title="Select Language">
+              <span>EN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <!-- Center Icon Badge -->
+          <div class="nfr-badge-container">
+            <div class="nfr-sprout-badge">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1c7446" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22v-9"/>
+                <path d="M12 13C12 7.5 7.5 4 2 4c0 5.5 3.5 10 10 9z"/>
+                <path d="M12 13c0-5.5 4.5-9 10-9 0 5.5-3.5 10-10 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Header Titles -->
+          <div class="nfr-auth-header">
+            <h2 class="nfr-auth-title">Welcome Back</h2>
+            <p class="nfr-auth-subtitle">Sign in to access the MetraScan National Portal</p>
+          </div>
+
+          <!-- Customer Sign In Form -->
+          <form class="nfr-auth-form" id="consumer-login-form">
+            <div class="nfr-input-group">
+              <span class="nfr-input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </span>
+              <input type="text" id="consumer-phone" class="nfr-input" placeholder="Mobile phone number or email" required value="9876543210">
+            </div>
+
+            <div class="nfr-input-group">
+              <span class="nfr-input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input type="password" id="consumer-password" class="nfr-input" placeholder="Password" required value="password123">
+              <button type="button" class="nfr-password-toggle" id="btn-toggle-consumer-pw" title="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="nfr-form-options">
+              <label class="nfr-checkbox-label">
+                <input type="checkbox" id="consumer-remember-me" checked>
+                <span>Remember me</span>
+              </label>
+              <a href="javascript:void(0)" id="link-forgot-pw" class="nfr-forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="nfr-btn-primary">
+              <span>Sign In</span>
+              <span class="nfr-btn-arrow">→</span>
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="nfr-divider">
+            <span>Or continue with</span>
+          </div>
+
+          <!-- Government SSO Action Card (For Ministry & Field Command) -->
+          <div class="nfr-sso-card" data-navigate="ministry-login" role="button" tabindex="0" title="Ministry & Legal Metrology Officer Login">
+            <div class="nfr-sso-emblem-box">
+              <img src="assets/logo/emblem-official.png" alt="Government Emblem" class="nfr-sso-emblem">
+            </div>
+            <div class="nfr-sso-text">
+              <span class="nfr-sso-sub">Continue with</span>
+              <span class="nfr-sso-main">Government SSO</span>
+            </div>
+            <div class="nfr-sso-arrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+
+          <!-- Quick Demo Shortcut Pill -->
+          <div class="quick-demo-box" style="margin-top: 0; margin-bottom: 20px;">
+            <button type="button" class="btn btn-secondary btn-sm btn-block" id="btn-quick-consumer-demo">
+              ⚡ Instant Citizen Demo Access (Priya Sharma)
+            </button>
+          </div>
+
+          <!-- Register Link -->
+          <div class="nfr-register-box">
+            <span>New user? </span>
+            <a href="javascript:void(0)" class="nfr-register-link" data-navigate="consumer-signup">Register</a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 2B: CONSUMER SIGN UP (CITIZEN REGISTRATION)
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-signup">
+        <div class="auth-page-wrapper">
+          <div class="auth-nav-bar">
+            <button class="btn-back-link" data-navigate="consumer-login">
+              <span class="back-arrow">←</span> Back to Sign In
+            </button>
+          </div>
+
+          <div class="auth-card">
+            <div class="auth-header">
+              <img src="assets/logo/metrascan-logo-cropped.png" alt="MetraScan" class="auth-logo">
+              <h2 class="auth-title">Citizen Registration</h2>
+              <p class="auth-subtitle">Create your official account to verify products & protect your consumer rights.</p>
+            </div>
+
+            <form class="auth-form" id="consumer-signup-form">
+              <div class="form-group">
+                <label class="form-label" for="consumer-signup-name">Full Name *</label>
+                <input type="text" id="consumer-signup-name" class="form-input" placeholder="e.g. Ananya Sen" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="consumer-signup-email">Email Address *</label>
+                <input type="email" id="consumer-signup-email" class="form-input" placeholder="name@example.com" required>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="consumer-signup-phone">Mobile Phone *</label>
+                  <div class="phone-input-with-btn" style="display: flex; gap: 6px;">
+                    <input type="tel" id="consumer-signup-phone" class="form-input" placeholder="9876543210" required>
+                    <button type="button" class="btn btn-outline btn-sm btn-send-otp-trigger" id="btn-consumer-send-otp" style="white-space: nowrap; font-size: 0.78rem;">Send OTP</button>
+                  </div>
+                  <div class="otp-verification-box" id="consumer-otp-box" style="display: none; margin-top: 8px; background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent! Demo Code: <strong>4892</strong></div>
+                    <div style="display: flex; gap: 6px;">
+                      <input type="text" id="consumer-otp-input" class="form-input mono-text" placeholder="Enter OTP (4892)" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
+                      <button type="button" class="btn btn-success btn-sm" id="btn-consumer-verify-otp">Verify</button>
+                    </div>
+                  </div>
+                  <div id="consumer-phone-verified-status" style="display: none; color: #16a34a; font-size: 0.78rem; font-weight: 700; margin-top: 4px;">
+                    ✓ Mobile Number Verified via SMS OTP
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="consumer-signup-city">City / District *</label>
+                  <input type="text" id="consumer-signup-city" class="form-input" placeholder="e.g. Mumbai" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="consumer-signup-state">State / UT *</label>
+                <input type="text" id="consumer-signup-state" class="form-input" placeholder="e.g. Maharashtra" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="consumer-signup-password">Password (min 6 chars) *</label>
+                <input type="password" id="consumer-signup-password" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="consumer-signup-confirm">Confirm Password *</label>
+                <input type="password" id="consumer-signup-confirm" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+
+              <div class="form-checkbox-row">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="consumer-signup-terms" required checked>
+                  <span class="checkbox-label">I agree to the Citizen Rights Charter under Legal Metrology Act, 2009.</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Create Account & Sign In</button>
+            </form>
+
+            <div class="auth-switch-box">
+              <span>Already registered? </span>
+              <a href="javascript:void(0)" class="auth-link-bold" data-navigate="consumer-login">Sign In Here</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 3: CONSUMER HOME
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-home">
+        <!-- Consumer Header -->
+        <header class="app-header">
+          <div class="header-left">
+            <a href="javascript:void(0)" class="app-brand" data-navigate="consumer-home">
+              <img src="assets/logo/metrascan-horizontal.png" alt="MetraScan" class="app-brand-logo">
+            </a>
+          </div>
+          <div class="header-right">
+            <button class="btn-icon-header" id="btn-consumer-notifications" title="Notifications">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="consumer-home-wrapper">
+          <!-- Hero Card -->
+          <div class="consumer-hero-card">
+            <div class="hero-pill-badge">
+              <span>National Metrology Shield</span>
+            </div>
+            <div class="consumer-greeting-text">
+              <span id="consumer-greeting">Good morning,</span>
+              <span id="consumer-user-name" style="font-weight: 800;">Priya</span>
+            </div>
+            <h2 class="consumer-hero-title">Verify before you buy.</h2>
+            <p class="consumer-hero-desc">Scan a product to check its declarations, compliance information and verification status.</p>
+            
+            <div class="hero-cta-group">
+              <button class="btn btn-hero-primary btn-lg" data-navigate="consumer-scan">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 7V5a2 2 0 012-2h2"/><path d="M17 3h2a2 2 0 012 2v2"/><path d="M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 21H5a2 2 0 01-2-2v-2"/>
+                  <line x1="7" y1="12" x2="17" y2="12"/>
+                </svg>
+                Scan Product
+              </button>
+              <button class="btn btn-hero-secondary btn-lg" id="btn-home-enter-code">
+                Enter Product Code
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Actions Grid -->
+          <section class="quick-actions-section">
+            <div class="section-heading-row">
+              <h3 class="section-title">Quick Actions</h3>
+            </div>
+            <div class="quick-actions-grid">
+              <div class="action-card" data-navigate="consumer-scan">
+                <div class="action-icon-circle action-icon-scan">📷</div>
+                <div class="action-title">Scan Product</div>
+                <div class="action-desc">Live camera scanner</div>
+              </div>
+              <div class="action-card" data-navigate="consumer-saved">
+                <div class="action-icon-circle action-icon-saved">⭐</div>
+                <div class="action-title">Saved Products</div>
+                <div class="action-desc">Bookmarked commodities</div>
+              </div>
+              <div class="action-card" data-navigate="consumer-history">
+                <div class="action-icon-circle action-icon-history">⏱</div>
+                <div class="action-title">Scan History</div>
+                <div class="action-desc">Previous verifications</div>
+              </div>
+              <div class="action-card" id="btn-quick-report-issue">
+                <div class="action-icon-circle action-icon-report">⚠</div>
+                <div class="action-title">Report Issue</div>
+                <div class="action-desc">File consumer complaint</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recent Verifications Section -->
+          <section class="recent-verifications-section">
+            <div class="section-heading-row" style="margin-bottom: 12px;">
+              <h3 class="section-title">Recent Verifications</h3>
+              <a href="javascript:void(0)" data-navigate="consumer-history">View All ›</a>
+            </div>
+            <div class="product-cards-list" id="recent-verifications-list">
+              <!-- Dynamically populated by consumer.js -->
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 4: PRODUCT SCANNER (CLEAN CAMERA VIEW)
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-scan">
+        <div class="scanner-viewport-wrapper">
+          <!-- Top Nav Bar over Scanner -->
+          <div class="scanner-nav-bar">
+            <button class="btn-scanner-icon" data-back title="Back">←</button>
+            <span class="scanner-nav-title">Scan Product</span>
+            <button class="btn-scanner-icon" id="btn-scanner-torch" title="Flashlight">⚡</button>
+          </div>
+
+          <!-- Video Stream and Targeting Overlays -->
+          <div class="camera-preview-container">
+            <video id="camera-preview-video" playsinline muted autoplay></video>
+            <div class="shutter-flash-overlay" id="consumer-shutter-flash"></div>
+
+            <!-- Dynamic Navigation Guidance Pill -->
+            <div class="scanner-guidance-pill" id="scanner-guidance-pill">
+              <span class="guidance-icon" id="guidance-icon">⛶</span>
+              <span class="guidance-text" id="guidance-text">Position product inside frame</span>
+            </div>
+
+            <!-- Directional Navigation Guidance Arrows -->
+            <div class="guidance-arrow guidance-arrow-left" id="guidance-arrow-left">
+              <span class="arrow-symbol">‹‹</span>
+              <span class="arrow-label">Move Left</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-right" id="guidance-arrow-right">
+              <span class="arrow-symbol">››</span>
+              <span class="arrow-label">Move Right</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-up" id="guidance-arrow-up">
+              <span class="arrow-symbol">︽</span>
+              <span class="arrow-label">Bring Closer</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-down" id="guidance-arrow-down">
+              <span class="arrow-symbol">︾</span>
+              <span class="arrow-label">Move Back</span>
+            </div>
+
+            <!-- Viewfinder Horizon Level Gauge -->
+            <div class="guidance-horizon-level" id="guidance-horizon-level">
+              <div class="horizon-line" id="guidance-horizon-line"></div>
+              <div class="horizon-center-mark"></div>
+              <span class="horizon-angle-tag" id="guidance-horizon-angle">0°</span>
+            </div>
+
+            <!-- Direct Scanning Processing Overlay -->
+            <div class="scanner-processing-overlay" id="scanner-processing-overlay" style="display: none;">
+              <div class="scanner-processing-card">
+                <div class="processing-radar-ring"></div>
+                <div class="processing-icon">⚖️</div>
+                <h4 class="processing-title">Auditing Statutory Declarations</h4>
+                <p class="processing-subtitle" id="scanner-processing-status">Scanning Rule 6(1) Declarations & OCR Text...</p>
+                <div class="processing-progress-bar">
+                  <div class="processing-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="scanner-overlay">
+              <div class="scanner-bop-frame" id="scanner-frame-box">
+                <div class="scanner-corner corner-tl"></div>
+                <div class="scanner-corner corner-tr"></div>
+                <div class="scanner-corner corner-bl"></div>
+                <div class="scanner-corner corner-br"></div>
+                <div class="scanner-laser"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons & Photo Capture Shutter -->
+          <div class="scanner-bottom-controls">
+            <div class="scanner-shutter-container">
+              <button type="button" class="btn-shutter-capture" id="btn-scanner-capture" title="Capture Photo">
+                <span class="shutter-inner-ring"></span>
+              </button>
+            </div>
+
+            <div class="scanner-btn-row">
+              <button type="button" class="btn btn-secondary" id="btn-scanner-upload">
+                <input type="file" id="scanner-gallery-input" accept="image/*" style="display: none;">
+                📷 Upload Label Photo
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-scanner-manual">
+                ⌨ Enter Code Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 5: PRODUCT VERIFICATION
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-verification">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-back title="Back">←</button>
+            <h3 style="font-size: 1.1rem;">Product Verification</h3>
+          </div>
+          <div class="header-right">
+            <button class="btn-icon-header" id="btn-share-product" title="Share">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="verification-page-wrapper" id="verification-content">
+          <!-- Dynamically populated by consumer.js -->
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 5B: CONSUMER OFFICIAL VERIFICATION CERTIFICATE / PDF VIEW
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-report-view">
+        <header class="app-header no-print">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="consumer-verification" title="Back to Verification">←</button>
+            <h3 style="font-size: 1.1rem;">Official Verification PDF</h3>
+          </div>
+          <div class="header-right"></div>
+        </header>
+
+        <div style="padding: 20px;">
+          <div id="consumer-report-document">
+            <!-- Dynamically populated by consumer.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 6: CONSUMER HISTORY
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-history">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="consumer-home" title="Home">←</button>
+            <h3 style="font-size: 1.1rem;">Scan History</h3>
+          </div>
+          <div class="header-right">
+            <button class="btn btn-sm btn-outline" id="btn-clear-history">Clear</button>
+          </div>
+        </header>
+
+        <div class="history-page-wrapper">
+          <div class="search-bar-box">
+            <span class="search-bar-icon">🔍</span>
+            <input type="text" id="history-search-input" class="search-bar-input" placeholder="Search by product, brand, or barcode...">
+          </div>
+
+          <div class="filter-chips-row">
+            <button class="history-filter-chip active" data-filter="all">All</button>
+            <button class="history-filter-chip" data-filter="verified">✓ Verified</button>
+            <button class="history-filter-chip" data-filter="review">⚠ Review</button>
+            <button class="history-filter-chip" data-filter="violation">✕ Violations</button>
+          </div>
+
+          <div class="history-cards-list" id="consumer-history-list">
+            <!-- Dynamically populated by consumer.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 7: SAVED PRODUCTS
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-saved">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="consumer-home" title="Home">←</button>
+            <h3 style="font-size: 1.1rem;">Saved Products</h3>
+          </div>
+          <div class="header-right">
+            <span class="badge badge-info" id="saved-count-badge">Bookmarked</span>
+          </div>
+        </header>
+
+        <div class="saved-page-wrapper">
+          <div class="saved-products-grid" id="saved-products-list">
+            <!-- Dynamically populated by consumer.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 8: CONSUMER PROFILE
+           =================================================================== -->
+      <section class="app-screen" id="screen-consumer-profile">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="consumer-home" title="Home">←</button>
+            <h3 style="font-size: 1.1rem;">My Profile</h3>
+          </div>
+          <div class="header-right">
+          </div>
+        </header>
+
+        <div class="profile-page-wrapper" style="padding-bottom: 100px;">
+
+          <!-- ── Hero Identity Card ────────────────────────────────────────── -->
+          <div style="
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+            border-radius: 0 0 28px 28px;
+            padding: 32px 24px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          ">
+            <!-- subtle decorative circles -->
+            <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%;"></div>
+            <div style="position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;background:rgba(255,255,255,0.06);border-radius:50%;"></div>
+
+            <div style="
+              width: 80px; height: 80px;
+              background: rgba(255,255,255,0.2);
+              border: 3px solid rgba(255,255,255,0.5);
+              border-radius: 50%;
+              margin: 0 auto 14px;
+              display: flex; align-items: center; justify-content: center;
+              font-size: 2.2rem;
+              backdrop-filter: blur(6px);
+            ">👤</div>
+
+            <h2 style="color:#fff; font-size:1.35rem; font-weight:700; margin-bottom:4px;" id="profile-user-name">Priya Sharma</h2>
+            <p style="color:rgba(255,255,255,0.8); font-size:0.85rem; margin-bottom:10px;" id="profile-user-email">priya.sharma@example.com</p>
+
+            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:4px 14px; font-size:0.75rem; color:#fff;" id="profile-google-badge">
+              ✓ Verified Consumer
+            </div>
+          </div>
+
+          <!-- ── Stats Bar ─────────────────────────────────────────────────── -->
+          <div style="
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin: -20px 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+            overflow: hidden;
+            position: relative; z-index: 2;
+          ">
+            <div style="flex:1; padding:16px 8px; text-align:center; border-right:1px solid var(--border-color);">
+              <div style="font-size:1.5rem; font-weight:800; color:#0284c7;" id="profile-total-scans">12</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Scanned</div>
+            </div>
+            <div style="flex:1; padding:16px 8px; text-align:center; border-right:1px solid var(--border-color); cursor:pointer;" data-navigate="consumer-saved" title="View Saved Products">
+              <div style="font-size:1.5rem; font-weight:800; color:#16a34a;" id="profile-total-saved">4</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Saved ⭐</div>
+            </div>
+            <div style="flex:1; padding:16px 8px; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:800; color:#7c3aed;">100%</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Protected</div>
+            </div>
+          </div>
+
+          <div style="padding: 24px 16px 0;">
+
+            <!-- ── Saved Products Summary Section ──────────────────────────── -->
+            <div style="background:var(--bg-card); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div style="width:34px;height:34px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;">⭐</div>
+                  <div>
+                    <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Bookmarked Products</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Saved commodities & verification records</div>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline" data-navigate="consumer-saved">Manage All</button>
+              </div>
+              <div id="profile-saved-products-preview">
+                <!-- Dynamically populated by consumer.js -->
+              </div>
+            </div>
+
+            <!-- ── Personal Info Form ──────────────────────────────────────── -->
+            <div style="background:var(--bg-card); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#0284c7,#38bdf8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;">📋</div>
+                <div>
+                  <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Personal Information</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Your registered citizen details</div>
+                </div>
+              </div>
+              <form id="form-consumer-profile-details" class="profile-edit-form">
+                <div class="form-group">
+                  <label class="form-label" for="consumer-profile-name">Full Name</label>
+                  <input type="text" id="consumer-profile-name" class="form-input" required>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="consumer-profile-email">Email Address</label>
+                    <input type="email" id="consumer-profile-email" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="consumer-profile-phone">Mobile Phone</label>
+                    <input type="tel" id="consumer-profile-phone" class="form-input">
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="consumer-profile-city">City / District</label>
+                    <input type="text" id="consumer-profile-city" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="consumer-profile-state">State / UT</label>
+                    <input type="text" id="consumer-profile-state" class="form-input">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="consumer-profile-address">Home Address</label>
+                  <input type="text" id="consumer-profile-address" class="form-input" placeholder="House/Flat No, Street, Landmark">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px;">Save Changes</button>
+              </form>
+            </div>
+
+            <!-- ── Helpline Card ───────────────────────────────────────────── -->
+            <div style="
+              background: linear-gradient(135deg, #1e40af, #1d4ed8);
+              border-radius:16px; padding:20px; margin-bottom:16px;
+              display:flex; gap:16px; align-items:center;
+            ">
+              <div style="font-size:2rem;">📞</div>
+              <div>
+                <div style="color:rgba(255,255,255,0.75); font-size:0.75rem; margin-bottom:2px;">National Consumer Helpline</div>
+                <div style="color:#fff; font-size:1.4rem; font-weight:800; letter-spacing:1px;">1915</div>
+                <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">consumerhelpline.gov.in • SMS: 8800001915</div>
+              </div>
+            </div>
+
+            <!-- ── Sign Out Button ─────────────────────────────────────────── -->
+            <div style="margin-top: 24px; margin-bottom: 40px;">
+              <button id="btn-consumer-logout" class="btn btn-danger btn-block btn-lg" style="
+                width: 100%;
+                height: 52px;
+                border-radius: 14px;
+                background: #ef4444;
+                color: #ffffff;
+                font-size: 1rem;
+                font-weight: 700;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+                transition: transform 0.15s ease, background 0.2s ease;
+              "
+              onmouseover="this.style.background='#dc2626';this.style.transform='translateY(-1px)';"
+              onmouseout="this.style.background='#ef4444';this.style.transform='translateY(0)';">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Sign Out of MetraScan</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 9: MINISTRY LOGIN
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-login">
+        <div class="auth-page-wrapper">
+          <div class="auth-nav-bar">
+            <button class="btn-back-link" data-back>
+              <span class="back-arrow">←</span> Back to selection
+            </button>
+          </div>
+
+          <div class="auth-card">
+            <div class="auth-header">
+              <img src="assets/logo/metrascan-logo-cropped.png" alt="MetraScan Official" class="auth-logo">
+              <h2 class="auth-title">Ministry Official</h2>
+              <p class="auth-subtitle">Secure access for authorized government officials.</p>
+            </div>
+
+            <form class="auth-form" id="ministry-login-form">
+              <div class="form-group">
+                <label class="form-label" for="ministry-gov-id">Government Official ID</label>
+                <input type="text" id="ministry-gov-id" class="form-input" placeholder="e.g. GOV-LM-2026-4481" required value="GOV-LM-2026-4481">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-department">Department / Wing</label>
+                <select id="ministry-department" class="form-select" required>
+                  <option value="Legal Metrology Department">Legal Metrology Department (Central/State)</option>
+                  <option value="Bureau of Indian Standards (BIS)">Bureau of Indian Standards (BIS)</option>
+                  <option value="Food Safety & Standards Authority (FSSAI)">Food Safety & Standards Authority (FSSAI)</option>
+                  <option value="Consumer Affairs Enforcement Directorate">Consumer Affairs Enforcement Directorate</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-password">Security PIN / Password</label>
+                <input type="password" id="ministry-password" class="form-input" placeholder="••••••••" required value="officer2026">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Continue as Official</button>
+            </form>
+
+            <div class="quick-demo-box">
+              <p class="text-muted">Instant Evaluator Access:</p>
+              <button type="button" class="btn btn-secondary btn-sm btn-block" id="btn-quick-ministry-demo">
+                ⚡ Quick Official Demo (Insp. Rajesh Verma)
+              </button>
+            </div>
+
+            <!-- Link to Sign Up -->
+            <div class="auth-switch-box">
+              <span>Authorized Enforcement Officer? </span>
+              <a href="javascript:void(0)" class="auth-link-bold" data-navigate="ministry-signup">Register Government Account</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 9B: MINISTRY OFFICIAL REGISTRATION (OFFICER SIGN UP)
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-signup">
+        <div class="auth-page-wrapper" style="max-width: 580px;">
+          <div class="auth-nav-bar">
+            <button class="btn-back-link" data-navigate="ministry-login">
+              <span class="back-arrow">←</span> Back to Official Sign In
+            </button>
+          </div>
+
+          <div class="auth-card">
+            <div class="auth-header">
+              <img src="assets/logo/metrascan-logo-cropped.png" alt="MetraScan Official" class="auth-logo">
+              <h2 class="auth-title">Officer Registration</h2>
+              <p class="auth-subtitle">Authorized credential enrollment for Legal Metrology & DCA officers.</p>
+            </div>
+
+            <form class="auth-form" id="ministry-signup-form">
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-name">Officer Full Name *</label>
+                <input type="text" id="ministry-signup-name" class="form-input" placeholder="e.g. Insp. Vikram Malhotra" required>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="ministry-signup-govid">Government Official ID / Code *</label>
+                  <input type="text" id="ministry-signup-govid" class="form-input" placeholder="e.g. GOV-LM-2026-9912" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ministry-signup-badge">Official Badge Number *</label>
+                  <input type="text" id="ministry-signup-badge" class="form-input" placeholder="e.g. LM-DEL-9912" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-designation">Official Designation *</label>
+                <select id="ministry-signup-designation" class="form-select" required>
+                  <option value="Inspector of Legal Metrology">Inspector of Legal Metrology</option>
+                  <option value="Senior Inspector of Legal Metrology">Senior Inspector of Legal Metrology</option>
+                  <option value="Assistant Controller of Legal Metrology">Assistant Controller of Legal Metrology</option>
+                  <option value="Deputy Controller & Technical Officer">Deputy Controller & Technical Officer</option>
+                  <option value="Consumer Affairs Surveillance Officer">Consumer Affairs Surveillance Officer</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-dept">Department / Directorate *</label>
+                <input type="text" id="ministry-signup-dept" class="form-input" value="Department of Legal Metrology, Ministry of Consumer Affairs" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-jurisdiction">Assigned Jurisdiction / Circle *</label>
+                <input type="text" id="ministry-signup-jurisdiction" class="form-input" placeholder="e.g. North Delhi Division & NCR Circle" required>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="ministry-signup-email">Official Govt / Dept Email *</label>
+                  <input type="email" id="ministry-signup-email" class="form-input" placeholder="officer@nic.in / dept.gov.in" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ministry-signup-phone">Contact Telephone *</label>
+                  <div class="phone-input-with-btn" style="display: flex; gap: 6px;">
+                    <input type="tel" id="ministry-signup-phone" class="form-input" placeholder="1123380000" required>
+                    <button type="button" class="btn btn-outline btn-sm btn-send-otp-trigger" id="btn-ministry-send-otp" style="white-space: nowrap; font-size: 0.78rem;">Send OTP</button>
+                  </div>
+                  <div class="otp-verification-box" id="ministry-otp-box" style="display: none; margin-top: 8px; background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent! Demo Code: <strong>4892</strong></div>
+                    <div style="display: flex; gap: 6px;">
+                      <input type="text" id="ministry-otp-input" class="form-input mono-text" placeholder="Enter OTP (4892)" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
+                      <button type="button" class="btn btn-success btn-sm" id="btn-ministry-verify-otp">Verify</button>
+                    </div>
+                  </div>
+                  <div id="ministry-phone-verified-status" style="display: none; color: #16a34a; font-size: 0.78rem; font-weight: 700; margin-top: 4px;">
+                    ✓ Contact Phone Verified via SMS OTP
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-password">Official Security Password (min 6 chars) *</label>
+                <input type="password" id="ministry-signup-password" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ministry-signup-confirm">Confirm Password *</label>
+                <input type="password" id="ministry-signup-confirm" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+
+              <div class="form-checkbox-row">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="ministry-signup-oath" required checked>
+                  <span class="checkbox-label">I certify that I am an authorized enforcement officer appointed under Section 13 of the Legal Metrology Act, 2009.</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Register Official Account</button>
+            </form>
+
+            <div class="auth-switch-box">
+              <span>Already registered? </span>
+              <a href="javascript:void(0)" class="auth-link-bold" data-navigate="ministry-login">Sign In Here</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 10: MINISTRY DASHBOARD (FIELD COMMAND CENTER)
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-dashboard">
+        <!-- Ministry Official Header Banner -->
+        <div class="ministry-header-banner">
+          <div class="ministry-brand-group">
+            <img src="assets/logo/metrascan-mark.png" alt="MetraScan Emblem" class="ministry-emblem">
+            <div class="ministry-title-box">
+              <h3>METRASCAN GOVT</h3>
+              <p>Department of Legal Metrology</p>
+            </div>
+          </div>
+          <div class="ministry-officer-badge" style="display: flex; align-items: center; gap: 10px;">
+            <div class="officer-info-text">
+              <div class="officer-name" id="ministry-officer-name">Insp. Rajesh Verma</div>
+              <div class="officer-dept" id="ministry-officer-dept">Legal Metrology Dept</div>
+            </div>
+            <button class="btn-icon-header" data-navigate="ministry-profile" title="Officer Profile" aria-label="Officer Profile">
+              👤
+            </button>
+          </div>
+        </div>
+
+        <div class="ministry-dashboard-wrapper">
+          <!-- Field Command Center Hero -->
+          <div class="ministry-hero-card">
+            <div class="command-pill">FIELD COMMAND CENTER</div>
+            <h2>Make every inspection count.</h2>
+            <p>Monitor inspections, compliance and active cases from one place.</p>
+            
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number" id="stat-total-inspections">248</div>
+                <div class="stat-label">Inspections</div>
+                <span class="stat-trend trend-up">↑ +14.2%</span>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number highlight-green" id="stat-compliance-rate">86%</div>
+                <div class="stat-label">Compliance</div>
+                <span class="stat-trend trend-up">↑ 94.2% Pass</span>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number highlight-red" id="stat-total-violations">32</div>
+                <div class="stat-label">Violations</div>
+                <span class="stat-trend trend-down">↓ -4.8% Active</span>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="stat-open-cases">6</div>
+                <div class="stat-label">Open Cases</div>
+                <span class="stat-trend trend-neutral">⚡ Court Action</span>
+              </div>
+            </div>
+
+            <div class="hero-actions-row">
+              <button class="btn hero-btn-scan" data-navigate="ministry-scan">
+                <span class="btn-icon">📷</span>
+                <span>Scan to Inspect</span>
+              </button>
+              <button class="btn hero-btn-primary" data-navigate="ministry-inspection">
+                <span class="btn-icon">➕</span>
+                <span>New Inspection</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Compliance Pulse Visualization -->
+          <div class="compliance-pulse-card">
+            <div class="section-heading-row">
+              <h3 class="section-title">Compliance Pulse</h3>
+              <span class="badge badge-success">86% National Index</span>
+            </div>
+            <div id="compliance-pulse-container">
+              <!-- Dynamically populated by ministry.js -->
+            </div>
+          </div>
+
+          <!-- Dashboard Activity Section with Tabs -->
+          <div class="dashboard-activity-container">
+            <div class="dashboard-tabs-bar">
+              <button class="dashboard-tab-btn active" data-tab="tab-inspections">Recent Inspections</button>
+              <button class="dashboard-tab-btn" data-tab="tab-cases">Open Cases (6)</button>
+              <button class="dashboard-tab-btn" data-tab="tab-violations">Recent Violations</button>
+            </div>
+
+            <!-- Inspections Tab -->
+            <div class="tab-content-pane" id="section-inspections">
+              <div id="dashboard-inspections-list">
+                <!-- Dynamically populated by ministry.js -->
+              </div>
+            </div>
+
+            <!-- Cases Tab -->
+            <div class="tab-content-pane" id="section-cases" style="display: none;">
+              <div id="dashboard-cases-list">
+                <!-- Dynamically populated by ministry.js -->
+              </div>
+            </div>
+
+            <!-- Violations Tab -->
+            <div class="tab-content-pane" id="section-violations" style="display: none;">
+              <div id="dashboard-violations-list">
+                <!-- Dynamically populated by ministry.js -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 10B: MINISTRY INSPECTOR CAMERA SCANNER
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-scan">
+        <div class="scanner-viewport-wrapper">
+          <!-- Top Nav Bar over Scanner -->
+          <div class="scanner-nav-bar">
+            <button class="btn-scanner-icon" data-navigate="ministry-dashboard" title="Back to Dashboard">←</button>
+            <span class="scanner-nav-title">Field Inspection Scan</span>
+            <button class="btn-scanner-icon" id="btn-inspector-torch" title="Flashlight">⚡</button>
+          </div>
+
+          <!-- Video Stream and Targeting Overlays -->
+          <div class="camera-preview-container">
+            <video id="inspector-camera-preview-video" playsinline muted autoplay></video>
+            <div class="shutter-flash-overlay" id="inspector-shutter-flash"></div>
+
+            <!-- Dynamic Navigation Guidance Pill -->
+            <div class="scanner-guidance-pill" id="inspector-guidance-pill">
+              <span class="guidance-icon" id="inspector-guidance-icon">⛶</span>
+              <span class="guidance-text" id="inspector-guidance-text">Position product inside frame</span>
+            </div>
+
+            <!-- Directional Navigation Guidance Arrows -->
+            <div class="guidance-arrow guidance-arrow-left" id="inspector-guidance-arrow-left">
+              <span class="arrow-symbol">‹‹</span>
+              <span class="arrow-label">Move Left</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-right" id="inspector-guidance-arrow-right">
+              <span class="arrow-symbol">››</span>
+              <span class="arrow-label">Move Right</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-up" id="inspector-guidance-arrow-up">
+              <span class="arrow-symbol">︽</span>
+              <span class="arrow-label">Bring Closer</span>
+            </div>
+            <div class="guidance-arrow guidance-arrow-down" id="inspector-guidance-arrow-down">
+              <span class="arrow-symbol">︾</span>
+              <span class="arrow-label">Move Back</span>
+            </div>
+
+            <!-- Viewfinder Horizon Level Gauge -->
+            <div class="guidance-horizon-level" id="inspector-guidance-horizon-level">
+              <div class="horizon-line" id="inspector-guidance-horizon-line"></div>
+              <div class="horizon-center-mark"></div>
+              <span class="horizon-angle-tag" id="inspector-guidance-horizon-angle">0°</span>
+            </div>
+
+            <!-- Direct Scanning Processing Overlay -->
+            <div class="scanner-processing-overlay" id="inspector-processing-overlay" style="display: none;">
+              <div class="scanner-processing-card">
+                <div class="processing-radar-ring"></div>
+                <div class="processing-icon">⚖️</div>
+                <h4 class="processing-title">Field Inspection Analysis</h4>
+                <p class="processing-subtitle" id="inspector-processing-status">Running Optical Audit on Declarations...</p>
+                <div class="processing-progress-bar">
+                  <div class="processing-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="scanner-overlay">
+              <div class="scanner-bop-frame" id="inspector-scanner-frame-box">
+                <div class="scanner-corner corner-tl"></div>
+                <div class="scanner-corner corner-tr"></div>
+                <div class="scanner-corner corner-bl"></div>
+                <div class="scanner-corner corner-br"></div>
+                <div class="scanner-laser inspector-scanner-laser"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden File Input for Inspector File / Barcode Upload -->
+          <input type="file" id="inspector-gallery-input" accept="image/*" style="display: none;">
+
+          <!-- Bottom Action Buttons & Photo Capture Shutter -->
+          <div class="scanner-bottom-controls">
+            <div class="scanner-shutter-container">
+              <button type="button" class="btn-shutter-capture" id="btn-inspector-capture" title="Capture Photo">
+                <span class="shutter-inner-ring"></span>
+              </button>
+            </div>
+
+            <div class="scanner-btn-row">
+              <button type="button" class="btn btn-secondary" id="btn-inspector-upload-trigger">
+                📷 Upload Label Photo
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-inspector-manual-trigger">
+                ⌨ Enter Code Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 11: NEW INSPECTION WIZARD
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-inspection">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="ministry-dashboard" title="Back">←</button>
+            <h3 style="font-size: 1.1rem;">New Inspection</h3>
+          </div>
+          <div class="header-right">
+            <span class="badge badge-info" id="inspection-step-counter">Step 1 of 5</span>
+          </div>
+        </header>
+
+        <div class="wizard-page-wrapper">
+          <!-- Steps Navigation Header -->
+          <div class="wizard-steps-nav">
+            <div class="step-indicator active" id="step-indicator-1">
+              <span class="step-num">1</span>
+              <span class="step-title">Identify</span>
+            </div>
+            <div class="step-indicator pending" id="step-indicator-2">
+              <span class="step-num">2</span>
+              <span class="step-title">Declarations</span>
+            </div>
+            <div class="step-indicator pending" id="step-indicator-3">
+              <span class="step-num">3</span>
+              <span class="step-title">Checklist</span>
+            </div>
+            <div class="step-indicator pending" id="step-indicator-4">
+              <span class="step-num">4</span>
+              <span class="step-title">Evidence</span>
+            </div>
+            <div class="step-indicator pending" id="step-indicator-5">
+              <span class="step-num">5</span>
+              <span class="step-title">Report</span>
+            </div>
+          </div>
+
+          <!-- STEP 1: Product Identification -->
+          <div class="wizard-step-pane" id="wizard-step-pane-1">
+            <div class="wizard-pane-header">
+              <h3>Step 1: Product Identification</h3>
+              <p>Select or scan the package under statutory inspection.</p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-wizard-upload-trigger" style="flex: 1.2; font-weight: 700;">
+                📁 Upload Package Image & Auto-Fill
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-wizard-scan-trigger" data-navigate="ministry-scan" style="flex: 1;">
+                📷 Scan Barcode / QR
+              </button>
+              <input type="file" id="wizard-product-image-input" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label" for="wizard-product-select">Inspected Commodity</label>
+              <select id="wizard-product-select" class="form-select">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <div id="wizard-product-preview">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label" for="wizard-retailer-input">Retailer / Market Location</label>
+              <input type="text" id="wizard-retailer-input" class="form-input" placeholder="e.g. Big Bazaar, Connaught Place, New Delhi" value="Shree Ganesh Supermarket, Sector 22, Rohini, New Delhi">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="wizard-batch-input">Inspected Batch / Lot Number</label>
+              <input type="text" id="wizard-batch-input" class="form-input" value="NF-GO-2026-0819">
+            </div>
+          </div>
+
+          <!-- STEP 2: Declaration Information -->
+          <div class="wizard-step-pane" id="wizard-step-pane-2" style="display: none;">
+            <div class="wizard-pane-header">
+              <h3>Step 2: Declaration Information</h3>
+              <p>Statutory declarations required under Legal Metrology (Packaged Commodities) Rules, 2011.</p>
+            </div>
+
+            <div id="wizard-declarations-info">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- STEP 3: Compliance Checklist -->
+          <div class="wizard-step-pane" id="wizard-step-pane-3" style="display: none;">
+            <div class="wizard-pane-header">
+              <h3>Step 3: 6-Point Compliance Checklist</h3>
+              <p>Verify package compliance against statutory parameters.</p>
+            </div>
+
+            <div id="checklist-violation-notice" class="notice-banner notice-danger" style="display: none;"></div>
+
+            <div class="wizard-checklist-container" id="wizard-checklist-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- STEP 4: Evidence Collection -->
+          <div class="wizard-step-pane" id="wizard-step-pane-4" style="display: none;">
+            <div class="wizard-pane-header">
+              <h3>Step 4: Evidence & Photographic Proof</h3>
+              <p>Attach photographic documentation of labels, MRP stamp, and defects.</p>
+            </div>
+
+            <input type="file" id="evidence-file-input" accept="image/*" style="display: none;">
+
+            <div class="evidence-gallery-grid" id="wizard-evidence-grid">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+              <button type="button" class="btn btn-secondary" id="btn-capture-evidence">
+                📷 Capture Photo
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-upload-evidence">
+                📁 Upload File
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="wizard-notes-input">Inspector Observations & Field Notes</label>
+              <textarea id="wizard-notes-input" class="form-input" rows="3" style="height: auto; padding: 12px;" placeholder="Record packaging legibility, net weight findings, retailer explanation...">Routine inspection conducted. Retail packaging checked for compliance with Legal Metrology Rule 6.</textarea>
+            </div>
+          </div>
+
+          <!-- STEP 5: Violation Report & Final Generation -->
+          <div class="wizard-step-pane" id="wizard-step-pane-5" style="display: none;">
+            <div class="wizard-pane-header">
+              <h3>Step 5: Violation Summary & Enforcement Action</h3>
+              <p>Confirm violation classification and statutory directives.</p>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label" for="wizard-violation-type">Violation Category</label>
+              <select id="wizard-violation-type" class="form-select">
+                <option value="None / Fully Compliant">None (Package Compliant)</option>
+                <option value="Dual MRP Stamping & Overcharging">Dual MRP Stamping & Overcharging (Rule 18)</option>
+                <option value="Deficit Net Quantity Exceeding MPE">Deficit Net Quantity Exceeding MPE (Rule 24)</option>
+                <option value="Missing Mandatory Declarations">Missing Mandatory Declarations (Rule 6)</option>
+                <option value="Illegible Font Size / Sub-standard Height">Illegible Font Size / Sub-standard Height (Rule 9)</option>
+                <option value="Absence of Manufacturing / Packing Date">Absence of Manufacturing / Packing Date (Rule 6(1)(d))</option>
+                <option value="Missing Consumer Care Contact">Missing Consumer Care Contact (Rule 6(1)(n))</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label" for="wizard-violation-severity">Enforcement Severity</label>
+              <select id="wizard-violation-severity" class="form-select">
+                <option value="Low">Low (Advisory Rectification Notice)</option>
+                <option value="Medium" selected>Medium (15-Day Show Cause Notice)</option>
+                <option value="High">High (Compounding Fine & Summons)</option>
+                <option value="Critical">Critical (Immediate Seizure Memo)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="wizard-violation-action">Proposed Statutory Action</label>
+              <input type="text" id="wizard-violation-action" class="form-input" value="Issue Notice under Section 36 of Legal Metrology Act, 2009">
+            </div>
+          </div>
+
+          <!-- Wizard Footer Controls -->
+          <div class="wizard-footer-nav">
+            <button type="button" class="btn btn-secondary" id="wizard-btn-prev" style="display: none;">
+              ← Previous Step
+            </button>
+            <div style="flex: 1;"></div>
+            <button type="button" class="btn btn-primary" id="wizard-btn-next">
+              Next Step →
+            </button>
+            <button type="button" class="btn btn-success" id="wizard-btn-submit" style="display: none;">
+              ✓ Generate Inspection Report
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 12: REPORT CONFIRMATION
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-report-confirm">
+        <div class="report-confirm-wrapper">
+          <div class="confirm-success-badge">✓</div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 6px;">Inspection Report Generated</h2>
+          <p>The statutory inspection record has been securely committed to the central registry.</p>
+
+          <div id="report-confirm-details">
+            <!-- Dynamically populated by ministry.js -->
+          </div>
+
+          <div class="confirm-actions-col">
+            <button class="btn btn-primary btn-lg" id="btn-confirm-view-report">
+              📄 View Official Report Certificate
+            </button>
+            <button class="btn btn-secondary" id="btn-confirm-download-report">
+              🖨 Download / Print Official PDF
+            </button>
+            <button class="btn btn-outline" data-navigate="ministry-dashboard">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 13: OFFICIAL GOVERNMENT PRINTABLE REPORT CERTIFICATE
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-report-view">
+        <header class="app-header no-print">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="ministry-dashboard" title="Back to Dashboard">←</button>
+            <h3 style="font-size: 1.1rem;">Official Inspection Certificate</h3>
+          </div>
+          <div class="header-right">
+            <button class="btn btn-primary btn-sm" id="btn-print-official-report">
+              🖨 Print / Save PDF
+            </button>
+          </div>
+        </header>
+
+        <div style="padding: 20px;">
+          <div id="official-report-document">
+            <!-- Dynamically populated by ministry.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 14: MINISTRY HISTORY & CASE REGISTRY
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-history">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="ministry-dashboard" title="Dashboard">←</button>
+            <h3 style="font-size: 1.1rem;">Enforcement Registry</h3>
+          </div>
+          <div class="header-right">
+          </div>
+        </header>
+
+        <div style="padding: 20px;">
+          <div class="filter-chips-row" style="margin-bottom: 16px;">
+            <button class="history-filter-chip active m-hist-tab" data-tab="inspections">All Inspections</button>
+            <button class="history-filter-chip m-hist-tab" data-tab="violations">Violations Filed</button>
+            <button class="history-filter-chip m-hist-tab" data-tab="cases">Open Court Cases</button>
+          </div>
+
+          <div id="ministry-history-list">
+            <!-- Dynamically populated by ministry.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 15: MINISTRY INSPECTOR PROFILE (VIEW & EDIT CREDENTIALS)
+           =================================================================== -->
+      <section class="app-screen" id="screen-ministry-profile">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="btn-icon-header" data-navigate="ministry-dashboard" title="Dashboard">←</button>
+            <h3 style="font-size: 1.1rem;">Officer Profile</h3>
+          </div>
+          <div class="header-right">
+          </div>
+        </header>
+
+        <div style="padding-bottom: 40px;">
+
+          <!-- ── Hero Identity Card ──────────────────────────────────────────── -->
+          <div style="
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+            border-radius: 0 0 28px 28px;
+            padding: 32px 24px 44px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          ">
+            <!-- subtle decorative circles -->
+            <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%;"></div>
+            <div style="position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;background:rgba(255,255,255,0.06);border-radius:50%;"></div>
+
+            <!-- Emblem badge -->
+            <div style="
+              width: 86px; height: 86px;
+              background: rgba(255,255,255,0.2);
+              border: 3px solid rgba(255,255,255,0.5);
+              border-radius: 50%;
+              margin: 0 auto 14px;
+              display: flex; align-items: center; justify-content: center;
+              font-size: 2.4rem;
+              backdrop-filter: blur(6px);
+            ">⚖️</div>
+
+            <div style="display:inline-block; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.4); border-radius:20px; padding:3px 14px; margin-bottom:10px;">
+              <span style="color:#ffffff; font-size:0.72rem; font-weight:700; letter-spacing:1px;" id="inspector-profile-display-badge">Badge #LM-DEL-8841</span>
+            </div>
+
+            <h2 style="color:#fff; font-size:1.4rem; font-weight:800; margin-bottom:4px;" id="inspector-profile-display-name">Insp. Rajesh Verma</h2>
+            <p style="color:rgba(255,255,255,0.85); font-size:0.82rem; margin:0;" id="inspector-profile-display-dept">Legal Metrology Dept, Ministry of Consumer Affairs</p>
+
+            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:4px 14px; font-size:0.72rem; color:#ffffff; margin-top:12px;">
+              🔒 Active Enforcement Clearance
+            </div>
+          </div>
+
+          <!-- ── Stats Bar ──────────────────────────────────────────────────── -->
+          <div style="
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin: -22px 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+            overflow: hidden;
+            position: relative; z-index: 2;
+          ">
+            <div style="flex:1; padding:16px 8px; text-align:center; border-right:1px solid var(--border-color);">
+              <div style="font-size:1.5rem; font-weight:800; color:#0284c7;" id="inspector-total-inspections">0</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Inspections</div>
+            </div>
+            <div style="flex:1; padding:16px 8px; text-align:center; border-right:1px solid var(--border-color);">
+              <div style="font-size:1.5rem; font-weight:800; color:#dc2626;" id="inspector-total-violations">0</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Violations</div>
+            </div>
+            <div style="flex:1; padding:16px 8px; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:800; color:#16a34a;" id="inspector-total-certs">0</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Certified</div>
+            </div>
+          </div>
+
+          <div style="padding: 24px 16px 0;">
+
+            <!-- ── Officer Credentials Form ───────────────────────────────── -->
+            <div style="background:var(--bg-card); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#0284c7,#38bdf8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;">🪪</div>
+                <div>
+                  <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Officer Credentials</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Government registration &amp; jurisdictional details</div>
+                </div>
+              </div>
+              <form id="form-inspector-profile">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-name">Officer Full Name</label>
+                    <input type="text" id="inspector-edit-name" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-govid">Govt. ID / Employee Code</label>
+                    <input type="text" id="inspector-edit-govid" class="form-input" required>
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-badge">Badge / Seal Number</label>
+                    <input type="text" id="inspector-edit-badge" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-designation">Official Designation</label>
+                    <input type="text" id="inspector-edit-designation" class="form-input" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inspector-edit-dept">Department / Division</label>
+                  <input type="text" id="inspector-edit-dept" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inspector-edit-jurisdiction">Assigned Jurisdiction / Zone</label>
+                  <input type="text" id="inspector-edit-jurisdiction" class="form-input" placeholder="e.g. South Delhi Division &amp; NCR Circle" required>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-email">Official Email</label>
+                    <input type="email" id="inspector-edit-email" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inspector-edit-phone">Contact Number</label>
+                    <input type="tel" id="inspector-edit-phone" class="form-input" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inspector-edit-address">Field Office Address</label>
+                  <textarea id="inspector-edit-address" class="form-input" rows="2" style="height: auto; padding: 10px;"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inspector-edit-signature">Signatory Name (on Certificates)</label>
+                  <input type="text" id="inspector-edit-signature" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px;">Save Officer Profile</button>
+              </form>
+            </div>
+
+            <!-- ── Enforcement Authority Card ─────────────────────────────── -->
+            <div style="background:var(--bg-card); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;">🏛️</div>
+                <div>
+                  <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Enforcement Authority</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Legal Metrology Act, 2009 — Registry</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg-surface);border-radius:10px;">
+                  <span style="font-size:1.1rem;">⚖️</span>
+                  <div>
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Statutory Authority</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Appointed under Section 13, Legal Metrology Act, 2009</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg-surface);border-radius:10px;">
+                  <span style="font-size:1.1rem;">🔐</span>
+                  <div>
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Enforcement Clearance</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">LMPC Rules 2011 — Inspection &amp; Seizure Clearance Active</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg-surface);border-radius:10px;">
+                  <span style="font-size:1.1rem;">🌐</span>
+                  <div>
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Central Registry Sync</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Real-time NIC portal — Connected</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Sign Out Button ──────────────────────────────────────────── -->
+            <div style="margin-top: 24px; margin-bottom: 40px;">
+              <button type="button" class="btn-officer-logout" id="btn-inspector-full-logout" style="
+                width: 100%;
+                height: 52px;
+                border-radius: 14px;
+                background: #ef4444;
+                color: #ffffff;
+                font-size: 1rem;
+                font-weight: 700;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+                transition: transform 0.15s ease, background 0.2s ease;
+              "
+              onmouseover="this.style.background='#dc2626';this.style.transform='translateY(-1px)';"
+              onmouseout="this.style.background='#ef4444';this.style.transform='translateY(0)';">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Sign Out of Officer Account</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- =====================================================================
+         CONSUMER BOTTOM NAVIGATION (Mobile App Bar)
+         ===================================================================== -->
+    <nav class="consumer-bottom-nav" id="consumer-bottom-nav">
+      <button class="bottom-nav-item active" data-nav-target="consumer-home">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="bottom-nav-label">Home</span>
+      </button>
+
+      <button class="bottom-nav-item" data-nav-target="consumer-history">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="bottom-nav-label">History</span>
+      </button>
+
+      <button class="bottom-nav-item" data-nav-target="consumer-saved">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span class="bottom-nav-label">Saved</span>
+      </button>
+
+      <button class="bottom-nav-item" data-nav-target="consumer-profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="bottom-nav-label">Profile</span>
+      </button>
+    </nav>
+
+  </div><!-- /.app-container -->
+
+  <!-- =======================================================================
+       MODALS
+       ======================================================================= -->
+
+  <!-- Modal 1: Manual Code Entry & Audit -->
+  <div class="modal-container" id="modal-manual-code">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box" style="max-height: 85vh; overflow-y: auto;">
+      <div class="modal-header-row">
+        <h3>Manual Audit & Product Entry</h3>
+        <button class="modal-close-btn" data-modal-close="modal-manual-code">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 14px;">
+        Type the 13-digit EAN barcode or perform a manual audit of the statutory back-of-pack declarations.
+      </p>
+      <form id="form-manual-code">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="manual-barcode-input">Barcode Number or QR ID</label>
+          <input type="text" id="manual-barcode-input" class="form-input" placeholder="e.g. 8901234567890 or QR-IN-2026-9812">
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); width: 100%;">Demo barcodes:</span>
+          <button type="button" class="btn btn-sm btn-outline btn-quick-code" data-code="8901234567890">8901234567890</button>
+          <button type="button" class="btn btn-sm btn-outline btn-quick-code" data-code="8905551234567">8905551234567</button>
+        </div>
+
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px; margin-bottom: 14px;">
+          <h4 style="font-size: 0.85rem; margin-bottom: 10px; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <span>📋</span> Manual Declarations Audit:
+          </h4>
+          
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">1. FSSAI Logo & Licence Number</label>
+            <input type="text" id="manual-fssai-input" class="form-input" placeholder="e.g. FSSAI Lic. 10019021004123">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">2. Batch/Lot Number + Manufacturing/Packaging Date</label>
+            <input type="text" id="manual-batch-mfg-input" class="form-input" placeholder="e.g. Batch: NF-GO-2026-0819 · Mfg: 15/01/2026">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">3. Best Before / Use By / Expiry Date</label>
+            <input type="text" id="manual-expiry-input" class="form-input" placeholder="e.g. Best Before 12 Months · Exp: 14/01/2027">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Verify Product & Audit Declarations</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Report Consumer Issue / Grievance -->
+  <div class="modal-container" id="modal-report-issue">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box">
+      <div class="modal-header-row">
+        <h3>Report Product Grievance</h3>
+        <button class="modal-close-btn" data-modal-close="modal-report-issue">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+        Submit an alert to the Department of Legal Metrology for defective, overcharged, or deceptive packaging.
+      </p>
+      <form id="form-report-issue">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="report-product-name">Product Name</label>
+          <input type="text" id="report-product-name" class="form-input" placeholder="Product name" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="report-product-barcode">Barcode / Batch</label>
+          <input type="text" id="report-product-barcode" class="form-input" placeholder="Barcode or Batch Number">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="report-issue-type">Issue Nature</label>
+          <select id="report-issue-type" class="form-select" required>
+            <option value="Missing FSSAI Logo or Licence Number">Missing FSSAI Logo & Licence Number</option>
+            <option value="Missing Batch or Mfg Date">Missing Batch/Lot No. or Mfg Date</option>
+            <option value="Expired / Missing Expiry Date">Expired product or missing Expiry Date</option>
+            <option value="Overcharging (Above MRP)">Overcharging above declared MRP</option>
+            <option value="Deficit Net Weight / Quantity">Deficit net weight or volume</option>
+            <option value="Missing Manufacturer Details">Missing manufacturer address / contact</option>
+            <option value="Other Legal Metrology Violation">Other packaging violation</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="report-description">Complaint Description</label>
+          <textarea id="report-description" class="form-input" rows="3" style="height: auto; padding: 10px;" placeholder="Describe where and when purchased, retailer name, and details of the violation..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger btn-block">Submit Report to Ministry</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Google OAuth Setup Guide -->
+  <div class="modal-container" id="modal-google-help">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box">
+      <div class="modal-header-row">
+        <h3>Google OAuth Setup Guide</h3>
+        <button class="modal-close-btn" data-modal-close="modal-google-help">✕</button>
+      </div>
+      <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+        <p style="margin-bottom: 10px;">MetraScan includes <strong>real Google Identity Services (GIS)</strong>. To connect your live Google Cloud credentials:</p>
+        <ol style="padding-left: 20px; margin-bottom: 14px;">
+          <li>Visit <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a></li>
+          <li>Create a new project (e.g. <em>MetraScan Verification</em>)</li>
+          <li>Configure your <strong>OAuth Consent Screen</strong> (External)</li>
+          <li>Under <strong>Credentials</strong>, click <strong>Create Credentials → OAuth client ID</strong></li>
+          <li>Select <strong>Web application</strong></li>
+          <li>Under <strong>Authorized JavaScript origins</strong>, add your local/deployed server URL:
+            <br><code>http://localhost:3000</code> or <code>http://127.0.0.1:5500</code>
+          </li>
+          <li>Copy your <strong>Client ID</strong> and open <code>js/auth.js</code></li>
+          <li>Replace <code>GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"</code> with your Client ID</li>
+          <li>Save and refresh the page!</li>
+        </ol>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">See <code>README.md</code> for complete configuration instructions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Officer / Inspector Manual Product Lookup -->
+  <div class="modal-container" id="modal-inspector-manual">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box" style="max-height: 85vh; overflow-y: auto;">
+      <div class="modal-header-row">
+        <h3>Official Product Search & Field Audit Entry</h3>
+        <button class="modal-close-btn" data-modal-close="modal-inspector-manual">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 14px;">
+        Enter barcode or record manual audit findings for statutory package compliance.
+      </p>
+      <form id="form-inspector-manual-code">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="inspector-manual-barcode-input">Barcode Number / Package ID</label>
+          <input type="text" id="inspector-manual-barcode-input" class="form-input" placeholder="e.g. 8901234567890 or 8909998887776">
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); width: 100%;">Quick select field targets:</span>
+          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8901234567890">8901234567890 (Oil)</button>
+          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8907654321098">8907654321098 (Atta)</button>
+          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8905551234567">8905551234567 (Drink)</button>
+          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8909998887776">8909998887776 (Cookies)</button>
+        </div>
+
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px; margin-bottom: 14px;">
+          <h4 style="font-size: 0.85rem; margin-bottom: 10px; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <span>🔍</span> Inspector Field Declarations Verification:
+          </h4>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">1. FSSAI Logo & Licence Number</label>
+            <input type="text" id="inspector-fssai-input" class="form-input" placeholder="e.g. FSSAI Lic. 10019021004123">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">2. Batch/Lot Number + Manufacturing/Packaging Date</label>
+            <input type="text" id="inspector-batch-mfg-input" class="form-input" placeholder="e.g. Batch: NF-GO-2026-0819 · Mfg: 15/01/2026">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" style="font-size: 0.8rem;">3. Best Before / Use By / Expiry Date</label>
+            <input type="text" id="inspector-expiry-input" class="form-input" placeholder="e.g. Best Before 12 Months · Exp: 14/01/2027">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" data-modal-close="modal-inspector-manual" style="flex: 1;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1.5;">Start Field Inspection →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Helper to apply manual declaration inputs to product -->
+  <script>
+  </script>
+
+  <!-- Supabase Official JavaScript Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Modular JavaScript Architecture -->
+  <script src="js/utils/app.js?v=4.1"></script>
+  <script src="js/services/api.js?v=4.1"></script>
+  <script src="js/auth/auth.js?v=4.1"></script>
+  <script src="js/utils/navigation.js?v=4.1"></script>
+  <script src="js/pages/consumer.js?v=4.1"></script>
+  <script src="js/pages/ministry.js?v=4.1"></script>
+
+  <!-- Application Bootstrap -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Initialize Navigation Events & Theme State
+      MetraScan.Nav.initNavigationEvents();
+      MetraScan.App.applyTheme(MetraScan.App.getTheme(), false);
+
+      // Explicitly enforce METRA SCAN title branding
+      var t1 = document.querySelector('.ms-title-line1');
+      if (t1) t1.textContent = 'METRA';
+      var t2 = document.querySelector('.ms-title-line2');
+      if (t2) t2.textContent = 'SCAN';
+
+      // Always start on the role selection landing page
+      MetraScan.Nav.navigateTo('role-selection');
+
+      // ── Splash landing ↔ Role selection transition ──
+      (function() {
+        var splash    = document.getElementById('ms-splash');
+        var rolesView = document.getElementById('ms-roles-view');
+        var enterBtn  = document.getElementById('btn-ms-enter');
+        var backBtn   = document.getElementById('btn-ms-back');
+
+        function showRoles() {
+          if (!splash || !rolesView) return;
+          splash.classList.add('ms-hidden');
+          rolesView.classList.add('ms-visible');
+          rolesView.scrollTop = 0;
+        }
+        function showSplash() {
+          if (!splash || !rolesView) return;
+          rolesView.classList.remove('ms-visible');
+          splash.classList.remove('ms-hidden');
+        }
+
+        if (enterBtn) {
+          enterBtn.addEventListener('click', function() {
+            MetraScan.Nav.navigateTo('consumer-login');
+          });
+        }
+        if (backBtn)  backBtn.addEventListener('click', showSplash);
+
+        // Password visibility toggle
+        var pwToggleBtn = document.getElementById('btn-toggle-consumer-pw');
+        if (pwToggleBtn) {
+          pwToggleBtn.addEventListener('click', function() {
+            var pwInput = document.getElementById('consumer-password');
+            if (pwInput) {
+              pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+            }
+          });
+        }
+      })();
+
+      // 2. Setup Form Submissions
+      // Consumer Login Form
+      const consumerLoginForm = document.getElementById('consumer-login-form');
+      if (consumerLoginForm) {
+        consumerLoginForm.onsubmit = async function(e) {
+          e.preventDefault();
+          const phoneInput = document.getElementById('consumer-phone');
+          const emailInput = document.getElementById('consumer-email');
+          const phoneOrEmail = phoneInput ? phoneInput.value : (emailInput ? emailInput.value : '');
+          const password = document.getElementById('consumer-password').value;
+          await MetraScan.Auth.loginAsConsumer(phoneOrEmail, password);
+        };
+      }
+
+      // Quick Consumer Demo Button (Login Screen & Front Page Hero)
+      const quickConsumerBtn = document.getElementById('btn-quick-consumer-demo');
+      if (quickConsumerBtn) {
+        quickConsumerBtn.onclick = async function() {
+          await MetraScan.Auth.quickConsumerDemo();
+        };
+      }
+      const heroConsumerBtn = document.getElementById('btn-hero-consumer-demo');
+      if (heroConsumerBtn) {
+        heroConsumerBtn.onclick = async function(e) {
+          e.stopPropagation();
+          await MetraScan.Auth.quickConsumerDemo();
+        };
+      }
+
+      // Ministry Login Form
+      const ministryLoginForm = document.getElementById('ministry-login-form');
+      if (ministryLoginForm) {
+        ministryLoginForm.onsubmit = async function(e) {
+          e.preventDefault();
+          const govId = document.getElementById('ministry-gov-id').value;
+          const dept = document.getElementById('ministry-department').value;
+          const pass = document.getElementById('ministry-password').value;
+          await MetraScan.Auth.loginAsMinistry(govId, dept, pass);
+        };
+      }
+
+      // ── Consumer Signup & Ministry Signup Form OTP Handlers ──────────────────
+      let pendingSignupData = null;
+      let pendingSignupType = null;
+
+      // Consumer Signup Send & Verify OTP
+      const consumerSignupForm = document.getElementById('consumer-signup-form');
+      const btnConsumerSendOtp = document.getElementById('btn-consumer-send-otp');
+      const btnConsumerVerifyOtp = document.getElementById('btn-consumer-verify-otp');
+
+      if (btnConsumerSendOtp) {
+        btnConsumerSendOtp.onclick = function() {
+          const phoneInput = document.getElementById('consumer-signup-phone');
+          const phone = phoneInput ? phoneInput.value.trim() : '';
+          if (!phone) {
+            MetraScan.App.showToast('Please enter your mobile phone number first.', 'error');
+            return;
+          }
+          const code = MetraScan.Auth.sendRegistrationOTP(phone);
+          if (code) {
+            const box = document.getElementById('consumer-otp-box');
+            if (box) box.style.display = 'block';
+            const otpInput = document.getElementById('consumer-otp-input');
+            if (otpInput) {
+              otpInput.value = '4892';
+              otpInput.focus();
+            }
+          }
+        };
+      }
+
+      if (btnConsumerVerifyOtp) {
+        btnConsumerVerifyOtp.onclick = function() {
+          const phoneInput = document.getElementById('consumer-signup-phone');
+          const otpInput = document.getElementById('consumer-otp-input');
+          const phone = phoneInput ? phoneInput.value.trim() : '';
+          const code = otpInput ? otpInput.value.trim() : '';
+
+          if (MetraScan.Auth.verifyRegistrationOTP(phone, code)) {
+            const box = document.getElementById('consumer-otp-box');
+            const badge = document.getElementById('consumer-phone-verified-status');
+            if (box) box.style.display = 'none';
+            if (badge) badge.style.display = 'block';
+            if (btnConsumerSendOtp) {
+              btnConsumerSendOtp.textContent = '✓ Verified';
+              btnConsumerSendOtp.disabled = true;
+              btnConsumerSendOtp.className = 'btn btn-success btn-sm';
+            }
+          }
+        };
+      }
+
+      if (consumerSignupForm) {
+        consumerSignupForm.onsubmit = async function(e) {
+          e.preventDefault();
+          const name = document.getElementById('consumer-signup-name').value;
+          const email = document.getElementById('consumer-signup-email').value;
+          const phone = document.getElementById('consumer-signup-phone').value;
+          const city = document.getElementById('consumer-signup-city').value;
+          const state = document.getElementById('consumer-signup-state').value;
+          const password = document.getElementById('consumer-signup-password').value;
+          const confirmPassword = document.getElementById('consumer-signup-confirm').value;
+
+          const data = { name, email, phone, city, state, password, confirmPassword };
+
+          if (!MetraScan.Auth.isPhoneVerified(phone)) {
+            pendingSignupData = data;
+            pendingSignupType = 'consumer';
+            openOTPVerifyModal(phone);
+          } else {
+            await MetraScan.Auth.signupAsConsumer(data);
+          }
+        };
+      }
+
+      // Ministry Signup Send & Verify OTP
+      const ministrySignupForm = document.getElementById('ministry-signup-form');
+      const btnMinistrySendOtp = document.getElementById('btn-ministry-send-otp');
+      const btnMinistryVerifyOtp = document.getElementById('btn-ministry-verify-otp');
+
+      if (btnMinistrySendOtp) {
+        btnMinistrySendOtp.onclick = function() {
+          const phoneInput = document.getElementById('ministry-signup-phone');
+          const phone = phoneInput ? phoneInput.value.trim() : '';
+          if (!phone) {
+            MetraScan.App.showToast('Please enter your contact phone number first.', 'error');
+            return;
+          }
+          const code = MetraScan.Auth.sendRegistrationOTP(phone);
+          if (code) {
+            const box = document.getElementById('ministry-otp-box');
+            if (box) box.style.display = 'block';
+            const otpInput = document.getElementById('ministry-otp-input');
+            if (otpInput) {
+              otpInput.value = '4892';
+              otpInput.focus();
+            }
+          }
+        };
+      }
+
+      if (btnMinistryVerifyOtp) {
+        btnMinistryVerifyOtp.onclick = function() {
+          const phoneInput = document.getElementById('ministry-signup-phone');
+          const otpInput = document.getElementById('ministry-otp-input');
+          const phone = phoneInput ? phoneInput.value.trim() : '';
+          const code = otpInput ? otpInput.value.trim() : '';
+
+          if (MetraScan.Auth.verifyRegistrationOTP(phone, code)) {
+            const box = document.getElementById('ministry-otp-box');
+            const badge = document.getElementById('ministry-phone-verified-status');
+            if (box) box.style.display = 'none';
+            if (badge) badge.style.display = 'block';
+            if (btnMinistrySendOtp) {
+              btnMinistrySendOtp.textContent = '✓ Verified';
+              btnMinistrySendOtp.disabled = true;
+              btnMinistrySendOtp.className = 'btn btn-success btn-sm';
+            }
+          }
+        };
+      }
+
+      if (ministrySignupForm) {
+        ministrySignupForm.onsubmit = async function(e) {
+          e.preventDefault();
+          const name = document.getElementById('ministry-signup-name').value;
+          const govId = document.getElementById('ministry-signup-govid').value;
+          const badgeNumber = document.getElementById('ministry-signup-badge').value;
+          const designation = document.getElementById('ministry-signup-designation').value;
+          const department = document.getElementById('ministry-signup-dept').value;
+          const jurisdiction = document.getElementById('ministry-signup-jurisdiction').value;
+          const email = document.getElementById('ministry-signup-email').value;
+          const phone = document.getElementById('ministry-signup-phone').value;
+          const password = document.getElementById('ministry-signup-password').value;
+          const confirmPassword = document.getElementById('ministry-signup-confirm').value;
+
+          const data = { name, govId, badgeNumber, designation, department, jurisdiction, email, phone, password, confirmPassword };
+
+          if (!MetraScan.Auth.isPhoneVerified(phone)) {
+            pendingSignupData = data;
+            pendingSignupType = 'ministry';
+            openOTPVerifyModal(phone);
+          } else {
+            await MetraScan.Auth.signupAsMinistry(data);
+          }
+        };
+      }
+
+      // Helper to Open & Handle OTP Verification Modal
+      function openOTPVerifyModal(phoneNum) {
+        const phoneDisplay = document.getElementById('modal-otp-phone-display');
+        const otpInput = document.getElementById('modal-otp-input');
+        if (phoneDisplay) phoneDisplay.textContent = phoneNum || '9876543210';
+        if (otpInput) otpInput.value = '4892';
+
+        MetraScan.Auth.sendRegistrationOTP(phoneNum);
+        MetraScan.App.openModal('modal-otp-verify');
+      }
+
+      const btnModalSubmitOtp = document.getElementById('btn-modal-submit-otp');
+      if (btnModalSubmitOtp) {
+        btnModalSubmitOtp.onclick = async function() {
+          const otpInput = document.getElementById('modal-otp-input');
+          const code = otpInput ? otpInput.value.trim() : '4892';
+          const phone = pendingSignupData ? pendingSignupData.phone : '';
+
+          if (MetraScan.Auth.verifyRegistrationOTP(phone, code)) {
+            MetraScan.App.closeModal('modal-otp-verify');
+            if (pendingSignupType === 'consumer' && pendingSignupData) {
+              await MetraScan.Auth.signupAsConsumer(pendingSignupData);
+            } else if (pendingSignupType === 'ministry' && pendingSignupData) {
+              await MetraScan.Auth.signupAsMinistry(pendingSignupData);
+            }
+            pendingSignupData = null;
+            pendingSignupType = null;
+          }
+        };
+      }
+
+      const btnModalResendOtp = document.getElementById('btn-modal-resend-otp');
+      if (btnModalResendOtp) {
+        btnModalResendOtp.onclick = function() {
+          const phone = pendingSignupData ? pendingSignupData.phone : '9876543210';
+          MetraScan.Auth.sendRegistrationOTP(phone);
+        };
+      }
+
+      // Quick Ministry Demo Button (Login Screen & Front Page Hero)
+      const quickMinistryBtn = document.getElementById('btn-quick-ministry-demo');
+      if (quickMinistryBtn) {
+        quickMinistryBtn.onclick = function() {
+          MetraScan.Auth.quickMinistryDemo();
+        };
+      }
+      const heroMinistryBtn = document.getElementById('btn-hero-ministry-demo');
+      if (heroMinistryBtn) {
+        heroMinistryBtn.onclick = function(e) {
+          e.stopPropagation();
+          MetraScan.Auth.quickMinistryDemo();
+        };
+      }
+
+      // ── Unified Logout via Event Delegation ──────────────────────────────────
+      // Handles ALL logout / sign-out buttons across the entire app:
+      //   Officer: .btn-officer-logout, #btn-ministry-logout (dashboard header)
+      //   Consumer: #btn-consumer-logout
+      // Using delegation means buttons work even if they appear before their
+      // screen lifecycle function runs.
+      document.addEventListener('click', function(e) {
+        const btn = e.target.closest(
+          '.btn-officer-logout, #btn-ministry-logout, #btn-consumer-logout'
+        );
+        if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          MetraScan.Auth.logout();
+        }
+      }, true); // capture phase so it fires before any onclick can block it
+
+      // Manual Code Entry Modal triggers
+      const enterCodeBtn = document.getElementById('btn-home-enter-code');
+      const scannerManualBtn = document.getElementById('btn-scanner-manual');
+      if (enterCodeBtn) {
+        enterCodeBtn.onclick = function() {
+          MetraScan.App.openModal('modal-manual-code');
+        };
+      }
+      if (scannerManualBtn) {
+        scannerManualBtn.onclick = function() {
+          MetraScan.App.openModal('modal-manual-code');
+        };
+      }
+
+      // Scanner Upload Trigger
+      const scannerUploadBtn = document.getElementById('btn-scanner-upload');
+      const scannerGalleryInput = document.getElementById('scanner-gallery-input');
+      if (scannerUploadBtn && scannerGalleryInput) {
+        scannerUploadBtn.onclick = function() {
+          scannerGalleryInput.click();
+        };
+      }
+
+      // Helper to apply manual declaration inputs to product
+      function applyManualDeclarationsToProduct(product, prefix) {
+        if (!product) return;
+        const fssai = document.getElementById(prefix + '-fssai-input');
+        const batchMfg = document.getElementById(prefix + '-batch-mfg-input');
+        const expiry = document.getElementById(prefix + '-expiry-input');
+
+        if (!product.declarations) product.declarations = {};
+        if (fssai && fssai.value.trim()) {
+          product.licenceNo = fssai.value.trim();
+          product.declarations.fssaiLicence = { status: 'pass', label: 'FSSAI Logo & Licence Number', value: fssai.value.trim() };
+        }
+        if (batchMfg && batchMfg.value.trim()) {
+          product.declarations.batchAndMfg = { status: 'pass', label: 'Batch/Lot No. & Mfg Date', value: batchMfg.value.trim() };
+        }
+        if (expiry && expiry.value.trim()) {
+          product.declarations.bestBefore = { status: 'pass', label: 'Best Before / Expiry Date', value: expiry.value.trim() };
+        }
+      }
+
+      // Manual Code Modal Form
+      const manualCodeForm = document.getElementById('form-manual-code');
+      if (manualCodeForm) {
+        manualCodeForm.onsubmit = function(e) {
+          e.preventDefault();
+          const codeInput = document.getElementById('manual-barcode-input');
+          let code = codeInput ? codeInput.value.trim() : '';
+          if (!code) code = '8901234567890';
+          const targetProd = MetraScan.App.getProductByBarcode(code) || MetraScan.App.state.products[0];
+          applyManualDeclarationsToProduct(targetProd, 'manual');
+          MetraScan.App.closeModal('modal-manual-code');
+          MetraScan.Consumer.triggerScanSuccess(targetProd.barcode);
+        };
+      }
+
+      // Quick Code Chips in Modal
+      const quickCodeBtns = document.querySelectorAll('.btn-quick-code');
+      quickCodeBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          const code = this.getAttribute('data-code');
+          const codeInput = document.getElementById('manual-barcode-input');
+          if (codeInput) codeInput.value = code;
+        };
+      });
+
+      // Officer Manual Code Modal Form
+      const inspectorManualForm = document.getElementById('form-inspector-manual-code');
+      if (inspectorManualForm) {
+        inspectorManualForm.onsubmit = function(e) {
+          e.preventDefault();
+          const codeInput = document.getElementById('inspector-manual-barcode-input');
+          let code = codeInput ? codeInput.value.trim() : '';
+          if (!code) code = '8901234567890';
+          const targetProd = MetraScan.App.getProductByBarcode(code) || MetraScan.App.state.products[0];
+          applyManualDeclarationsToProduct(targetProd, 'inspector');
+          MetraScan.App.closeModal('modal-inspector-manual');
+          if (MetraScan.Ministry && MetraScan.Ministry.triggerInspectorScanSuccess) {
+            MetraScan.Ministry.triggerInspectorScanSuccess(targetProd.barcode);
+          }
+        };
+      }
+
+      // Officer Quick Code Chips in Modal
+      const inspectorQuickCodeBtns = document.querySelectorAll('.btn-inspector-quick-code');
+      inspectorQuickCodeBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          const code = this.getAttribute('data-code');
+          const codeInput = document.getElementById('inspector-manual-barcode-input');
+          if (codeInput) codeInput.value = code;
+        };
+      });
+
+      // Quick Report Issue Trigger
+      const quickReportBtn = document.getElementById('btn-quick-report-issue');
+      if (quickReportBtn) {
+        quickReportBtn.onclick = function() {
+          MetraScan.App.openModal('modal-report-issue');
+        };
+      }
+
+      // Report Issue Form Submit
+      const reportIssueForm = document.getElementById('form-report-issue');
+      if (reportIssueForm) {
+        reportIssueForm.onsubmit = function(e) {
+          e.preventDefault();
+          const prodName = document.getElementById('report-product-name').value;
+          const issueType = document.getElementById('report-issue-type').value;
+          MetraScan.App.closeModal('modal-report-issue');
+          MetraScan.App.showToast('Complaint submitted for "' + prodName + '": ' + issueType + '. Grievance ID: #GRV-' + Math.floor(1000 + Math.random() * 9000), 'success', 4000);
+          reportIssueForm.reset();
+        };
+      }
+
+      // Google OAuth Help modal trigger
+      const googleGuideBtn = document.getElementById('btn-view-google-guide');
+      if (googleGuideBtn) {
+        googleGuideBtn.onclick = function() {
+          MetraScan.App.openModal('modal-google-help');
+        };
+      }
+
+      // Notifications Bell button
+      const notifBtn = document.getElementById('btn-consumer-notifications');
+      if (notifBtn) {
+        notifBtn.onclick = function() {
+          MetraScan.App.showToast('No new notifications. All verified commodities up-to-date.', 'info');
+        };
+      }
+
+      // Share product button
+      const shareBtn = document.getElementById('btn-share-product');
+      if (shareBtn) {
+        shareBtn.onclick = function() {
+          if (navigator.share) {
+            navigator.share({
+              title: 'MetraScan Product Verification',
+              text: 'Verified compliance record for commodity under Legal Metrology Act, 2009',
+              url: window.location.href
+            }).catch(function() {});
+          } else {
+            MetraScan.App.showToast('Verification report link copied to clipboard.', 'success');
+          }
+        };
+      }
+
+      // Clear History button
+      const clearHistoryBtn = document.getElementById('btn-clear-history');
+      if (clearHistoryBtn) {
+        clearHistoryBtn.onclick = function() {
+          MetraScan.App.state.scanHistory = [];
+          MetraScan.App.saveData('scanHistory', []);
+          MetraScan.Consumer.renderHistory();
+          MetraScan.App.showToast('Scan history cleared.', 'info');
+        };
+      }
+
+      // Forgot Password link
+      const forgotPwLink = document.getElementById('link-forgot-pw');
+      if (forgotPwLink) {
+        forgotPwLink.onclick = function() {
+          MetraScan.App.showToast('Password recovery instructions sent to registered address.', 'info');
+        };
+      }
+
+      // Modal Close Buttons with data-modal-close
+      const modalCloseButtons = document.querySelectorAll('[data-modal-close]');
+      modalCloseButtons.forEach(function(btn) {
+        btn.onclick = function() {
+          const targetModal = this.getAttribute('data-modal-close');
+          MetraScan.App.closeModal(targetModal);
+        };
+      });
+
+      // 3. Check Authentication Session & Navigate Initial View
+      const currentUser = MetraScan.Auth.getCurrentUser();
+      const userRole = MetraScan.Auth.getUserRole();
+
+      if (currentUser && userRole === 'consumer') {
+        MetraScan.Nav.navigateTo('consumer-home');
+      } else if (currentUser && userRole === 'ministry') {
+        MetraScan.Nav.navigateTo('ministry-dashboard');
+      } else {
+        MetraScan.Nav.navigateTo('role-selection');
+      }
+    });
+  </script>
+
+  <!-- ===================================================================
+       PHOTO CAPTURE PREVIEW MODAL
+       =================================================================== -->
+  <div class="modal-container" id="modal-captured-photo">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-icon">📸</span>
+          <div>
+            <h3>Captured Packaging Photo</h3>
+            <p class="modal-subtitle">Legal Metrology & AI OCR Audit Ready Snapshot</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-modal-close="modal-captured-photo" title="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="captured-photo-preview-wrapper">
+          <img id="captured-photo-img" src="" alt="Captured Packaging Photo" class="captured-photo-img">
+          
+          <div class="captured-photo-badge-overlay">
+            <span class="photo-badge badge-gps">📍 GPS: 28.6315° N, 77.2167° E</span>
+            <span class="photo-badge badge-timestamp" id="captured-photo-timestamp">⏱ 2026-09-12 02:36:00</span>
+            <span class="photo-badge badge-ocr">⚡ AI OCR Audit Ready</span>
+          </div>
+        </div>
+
+        <div class="captured-photo-meta-box">
+          <div class="meta-row">
+            <span class="meta-label">Source Stream:</span>
+            <span class="meta-val" id="captured-photo-source">Live HD Camera Viewport</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Audit Standard:</span>
+            <span class="meta-val">Legal Metrology Act (2009) Rule 6(1)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-btn-grid">
+          <button class="btn btn-primary" id="btn-photo-action-analyze">
+            <span>🔍</span>
+            <span>Analyze with AI & Audit Label</span>
+          </button>
+          <button class="btn btn-secondary" id="btn-photo-action-evidence" style="display: none;">
+            <span>📎</span>
+            <span>Attach as Field Evidence</span>
+          </button>
+          <button class="btn btn-outline" data-modal-close="modal-captured-photo">
+            <span>🔄</span>
+            <span>Retake Photo</span>
+          </button>
+  </div>
+
+  <!-- ===================================================================
+       SMS OTP VERIFICATION MODAL
+       =================================================================== -->
+  <div class="modal-container" id="modal-otp-verify">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-md">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-icon">📱</span>
+          <div>
+            <h3>Mobile Phone OTP Verification</h3>
+            <p class="modal-subtitle">SMS Security Code Verification for Citizen Registration</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-modal-close="modal-otp-verify" title="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
+          <p style="margin: 0; font-size: 0.86rem; color: var(--text-main);">
+            We have sent a 4-digit SMS OTP security code to: <strong id="modal-otp-phone-display">9876543210</strong>
+          </p>
+        </div>
+
+        <div style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">⚡ SIMULATED SMS NOTIFICATION:</span>
+          <span style="font-size: 0.88rem; font-weight: 800; color: var(--primary); letter-spacing: 2px;">Demo Code: 4892</span>
+        </div>
+
+        <div class="form-group" style="text-align: center;">
+          <label class="form-label" for="modal-otp-input" style="font-weight: 700;">Enter 4-Digit Security Code</label>
+          <input type="text" id="modal-otp-input" class="form-input mono-text" placeholder="4892" maxlength="6" style="max-width: 220px; margin: 0 auto; text-align: center; font-size: 1.5rem; letter-spacing: 6px; font-weight: 800; padding: 10px;">
+        </div>
+
+        <div style="text-align: center; margin-top: 12px;">
+          <button type="button" class="btn-text-link" id="btn-modal-resend-otp" style="font-size: 0.82rem; font-weight: 600;">
+            Didn't receive code? Resend SMS OTP
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success btn-block" id="btn-modal-submit-otp" style="font-size: 1rem; font-weight: 700; padding: 12px;">
+          <span>✓</span>
+          <span>Verify OTP & Complete Registration</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

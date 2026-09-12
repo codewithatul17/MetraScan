@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle cx="50" cy="50" r="50" fill="#1e3a8a"/>
+  <!-- Inspector peaked cap -->
+  <path d="M26 34C26 24 74 24 74 34L82 42C82 45 74 46 50 46C26 46 18 45 18 42L26 34Z" fill="#0f172a"/>
+  <rect x="47" y="32" width="6" height="6" rx="1" fill="#f59e0b"/>
+  <!-- Face -->
+  <circle cx="50" cy="52" r="16" fill="#fed7aa"/>
+  <!-- Uniform shoulders -->
+  <path d="M16 90C16 72 32 68 50 68C68 68 84 72 84 90" fill="#172554"/>
+  <!-- Badge on uniform -->
+  <rect x="58" y="76" width="14" height="6" rx="1" fill="#f59e0b"/>
+  <!-- Tie -->
+  <polygon points="48 68 52 68 54 84 50 88 46 84" fill="#0f172a"/>
+</svg>

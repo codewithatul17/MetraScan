@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="16" fill="#fffbeb"/>
+  <!-- Energy drink can -->
+  <rect x="75" y="45" width="50" height="120" rx="12" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+  <rect x="80" y="40" width="40" height="8" rx="2" fill="#94a3b8"/>
+  <rect x="75" y="65" width="50" height="75" fill="#f59e0b"/>
+  <polygon points="103 75 92 100 102 100 97 125 112 95 101 95" fill="#ffffff"/>
+  <text x="100" y="152" text-anchor="middle" font-family="sans-serif" font-size="6.5" font-weight="bold" fill="#0f172a">VITAL BOOST</text>
+  <!-- Warning badge -->
+  <circle cx="155" cy="45" r="16" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <path d="M155 38V46M155 51V53" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

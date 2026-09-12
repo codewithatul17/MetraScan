@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <!-- Curved text paths -->
+    <path id="topArc" d="M 14,50 A 36,36 0 0,1 86,50" />
+    <path id="bottomArc" d="M 86,50 A 36,36 0 0,1 14,50" />
+  </defs>
+
+  <!-- Outer Ring -->
+  <circle cx="50" cy="50" r="47" fill="#ffffff" stroke="#1e40af" stroke-width="2"/>
+  
+  <!-- Dashed Accent Ring -->
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+  <!-- Inner Scale Container Circle -->
+  <circle cx="50" cy="50" r="27" fill="#f8fafc" stroke="#1e3a8a" stroke-width="1.5"/>
+
+  <!-- Curved Top Text: GOVERNMENT OF INDIA -->
+  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="4.2" font-weight="800" fill="#d97706" letter-spacing="0.8">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">GOVERNMENT OF INDIA</textPath>
+  </text>
+
+  <!-- Curved Bottom Text: LEGAL METROLOGY -->
+  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="4.5" font-weight="800" fill="#1e3a8a" letter-spacing="1.2">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">LEGAL METROLOGY</textPath>
+  </text>
+
+  <!-- Central Scales of Justice Motif -->
+  <!-- Main Pillar -->
+  <path d="M 50,28 V 65" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="50" cy="28" r="2.8" fill="#d97706"/>
+
+  <!-- Crossbar -->
+  <path d="M 35,36 H 65" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Left Pan Assembly -->
+  <line x1="35" y1="36" x2="30" y2="47" stroke="#64748b" stroke-width="1.2"/>
+  <line x1="35" y1="36" x2="40" y2="47" stroke="#64748b" stroke-width="1.2"/>
+  <path d="M 28,47 C 28,52 42,52 42,47 Z" fill="#e2e8f0" stroke="#1e40af" stroke-width="1.2"/>
+
+  <!-- Right Pan Assembly -->
+  <line x1="65" y1="36" x2="60" y2="47" stroke="#64748b" stroke-width="1.2"/>
+  <line x1="65" y1="36" x2="70" y2="47" stroke="#64748b" stroke-width="1.2"/>
+  <path d="M 58,47 C 58,52 72,52 72,47 Z" fill="#e2e8f0" stroke="#1e40af" stroke-width="1.2"/>
+
+  <!-- Base Platform -->
+  <path d="M 40,65 H 60" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 43,69 H 57" stroke="#1e3a8a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
