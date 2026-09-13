@@ -15,8 +15,43 @@ from app.ocr.ocr_module import extract_text
 from app.ocr.validator import match_declarations, merge_verdicts
 from app.ocr.calibration import detect_reference_coin, get_mm_per_px
 from app.ocr.annotate import annotate
+from app.ocr.ingredients import extract_ingredients_text, parse_and_score_ingredients
 
 logger = logging.getLogger("metra.scan_service")
+
+
+def detect_visual_codes(img: np.ndarray) -> Dict[str, Optional[str]]:
+    """Detects physical 1D barcodes and 2D QR codes directly from the visual camera frame using OpenCV."""
+    barcode_str = None
+    qr_str = None
+    if img is None:
+        return {"barcode": None, "qr_code": None}
+
+    try:
+        bd = cv2.barcode.BarcodeDetector()
+        res = bd.detectAndDecode(img)
+        if isinstance(res, tuple) and res:
+            info = res[0]
+            if isinstance(info, (list, tuple)):
+                non_empty = [str(c).strip() for c in info if c]
+                if non_empty:
+                    barcode_str = non_empty[0]
+            elif isinstance(info, str) and info.strip():
+                barcode_str = info.strip()
+    except Exception as e:
+        logger.debug("Visual barcode detection skipped: %s", e)
+
+    try:
+        qd = cv2.QRCodeDetector()
+        res_qr = qd.detectAndDecode(img)
+        if isinstance(res_qr, tuple) and res_qr:
+            text = res_qr[0]
+            if isinstance(text, str) and text.strip():
+                qr_str = text.strip()
+    except Exception as e:
+        logger.debug("Visual QR detection skipped: %s", e)
+
+    return {"barcode": barcode_str, "qr_code": qr_str}
 
 
 def process_single_image(raw_bytes: bytes, filename: str) -> Dict[str, Any]:
@@ -40,7 +75,21 @@ def process_single_image(raw_bytes: bytes, filename: str) -> Dict[str, Any]:
         # 2. Rule Validation against Legal Metrology Declarations
         verdict = match_declarations(ocr_boxes)
 
-        # 3. Size Calibration via Reference Coin
+        # 2b. Visual Barcode and QR Code detection from camera frame
+        visual_codes = detect_visual_codes(img)
+        if visual_codes.get("barcode"):
+            verdict["barcode"] = {"found": True, "format_valid": True, "text": visual_codes["barcode"], "box": None}
+        if visual_codes.get("qr_code"):
+            verdict["qr_code"] = {"found": True, "format_valid": True, "text": visual_codes["qr_code"], "box": None}
+        elif "qr_code" not in verdict:
+            verdict["qr_code"] = {"found": False, "format_valid": False, "text": None, "box": None}
+
+        # 3. Ingredient Extraction & Health/Safety Scoring
+        ing_text = extract_ingredients_text(ocr_boxes)
+        ingredient_analysis = parse_and_score_ingredients(ing_text)
+        verdict["ingredient_analysis"] = ingredient_analysis
+
+        # 4. Size Calibration via Reference Coin
         reference_box = detect_reference_coin(img)
         calibrated = reference_box is not None
         mm_per_px = get_mm_per_px(reference_box) if calibrated else None
@@ -48,7 +97,7 @@ def process_single_image(raw_bytes: bytes, filename: str) -> Dict[str, Any]:
         if not calibrated:
             logger.info("No reference card detected in %s — skipping font-size/mm checks", filename)
 
-        # 4. Annotate image with pass/fail bounding boxes
+        # 5. Annotate image with pass/fail bounding boxes
         annotated_img = annotate(img, verdict, mm_per_px)
 
     except Exception as exc:
@@ -67,6 +116,7 @@ def process_single_image(raw_bytes: bytes, filename: str) -> Dict[str, Any]:
     return {
         "filename": filename,
         "verdict": verdict,
+        "ingredient_analysis": ingredient_analysis,
         "image_base64": image_base64,
         "calibrated": calibrated,
         "ocr_boxes_count": len(ocr_boxes),
@@ -85,6 +135,20 @@ async def process_multi_scan(images: List[UploadFile], user_id: Optional[str], u
         per_image_results.append(process_single_image(raw_bytes, image.filename or "image"))
 
     merged_verdict = merge_verdicts([r["verdict"] for r in per_image_results])
+
+    # Merge ingredient analysis: pick the best result where ingredients were detected
+    best_ing = None
+    for r in per_image_results:
+        ing = r.get("ingredient_analysis") or (r.get("verdict", {}).get("ingredient_analysis"))
+        if ing and ing.get("found"):
+            best_ing = ing
+            break
+    if not best_ing and per_image_results:
+        best_ing = per_image_results[0].get("ingredient_analysis") or per_image_results[0].get("verdict", {}).get("ingredient_analysis")
+
+    if best_ing:
+        merged_verdict["ingredient_analysis"] = best_ing
+
     if user_id:
         merged_verdict["user_id"] = user_id
     if user_email:
@@ -93,10 +157,11 @@ async def process_multi_scan(images: List[UploadFile], user_id: Optional[str], u
     has_declarations = any(
         isinstance(v, dict) and v.get("found", False)
         for k, v in merged_verdict.items()
-        if k not in ("user_id", "user_email")
-    )
+        if k not in ("user_id", "user_email", "ingredient_analysis")
+    ) or (best_ing and best_ing.get("found", False))
+
     total_ocr_boxes = sum(r.get("ocr_boxes_count", 0) for r in per_image_results)
-    is_valid_product = has_declarations
+    is_valid_product = has_declarations or total_ocr_boxes >= 3
 
     supabase = get_supabase_admin()
     scan_id = None

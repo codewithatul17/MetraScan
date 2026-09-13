@@ -101,6 +101,129 @@ def _find_matching_box(ocr_boxes, keywords, pattern, allow_pattern_only_fallback
 STRICT_KEYWORD_REQUIRED = {"manufacturer", "consumer_care", "mrp"}
 
 
+def extract_package_details(ocr_boxes: list) -> dict:
+    """
+    Extracts additional packaged commodity fields directly from OCR text:
+    - batch_no: Real batch / lot number if printed on label
+    - expiry_date: Best before / Expiry date if declared
+    - unit_sale_price: Unit sale price (Rule 6(1)(e)) e.g. Rs.1.00/g
+    - fssai_licence: 14-digit statutory FSSAI licence number
+    - barcode: Numeric barcode / EAN-13 string detected in OCR
+    """
+    batch_no = None
+    expiry_date = None
+    unit_sale_price = None
+    fssai_licence = None
+    barcode = None
+
+    sorted_boxes = sorted(ocr_boxes, key=lambda b: (b.get("box", [0, 0, 0, 0])[1], b.get("box", [0, 0, 0, 0])[0]))
+
+    for b in sorted_boxes:
+        t = b.get("text", "").strip()
+        if not t:
+            continue
+        t_lower = t.lower()
+
+        # 1. Statutory FSSAI License Number (14 digits)
+        if not fssai_licence:
+            m_fssai = re.search(r'(?:fssai|lic(?:\.|ense)?\s*(?:no\.?)?)[\s.:]*([0-9]{14})', t, re.IGNORECASE)
+            if m_fssai:
+                fssai_licence = m_fssai.group(1)
+
+        # 2. Barcode / GTIN / EAN-13
+        if not barcode:
+            m_ean = re.search(r'\b(890\d{10})\b', t)
+            if m_ean:
+                barcode = m_ean.group(1)
+            else:
+                m_gtin = re.search(r'\b(\d{12,14})\b', t)
+                if m_gtin and (not fssai_licence or m_gtin.group(1) != fssai_licence):
+                    if not re.search(r'\+91|tel|phone|pincode|pin\b', t, re.IGNORECASE):
+                        barcode = m_gtin.group(1)
+                elif re.search(r'\b(?:barcode|bar\s*code|ean|gtin)[\s.:#-]*([0-9]{8,14})\b', t, re.IGNORECASE):
+                    m_kw = re.search(r'\b(?:barcode|bar\s*code|ean|gtin)[\s.:#-]*([0-9]{8,14})\b', t, re.IGNORECASE)
+                    if m_kw:
+                        barcode = m_kw.group(1)
+
+        # 3. Unit Sale Price (USP - Rule 6(1)(e))
+        if not unit_sale_price:
+            m_usp = re.search(
+                r'(?:usp|unit\s*sale\s*price|unit\s*price)[\s.:]*(?:rs\.?|inr|₹)?\s*([0-9.]+\s*(?:\/|\s*per\s*)[A-Za-z0-9]+)',
+                t, re.IGNORECASE
+            )
+            if m_usp:
+                unit_sale_price = m_usp.group(1).strip()
+            elif re.search(r'\bunit\s*sale\s*price\b', t_lower):
+                # Look in same-row / adjacent boxes
+                b_y = b.get("box", [0, 0, 0, 0])[1] + b.get("box", [0, 0, 0, 0])[3] / 2
+                for other in sorted_boxes:
+                    if other is b:
+                        continue
+                    o_y = other.get("box", [0, 0, 0, 0])[1] + other.get("box", [0, 0, 0, 0])[3] / 2
+                    if abs(o_y - b_y) < 45:
+                        m_other = re.search(r'(?:rs\.?|inr|₹)?\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece))\b', other.get("text", ""), re.IGNORECASE)
+                        if m_other:
+                            unit_sale_price = m_other.group(0).strip()
+                            break
+            else:
+                m_bare_usp = re.search(r'(?:rs\.?|inr|₹)\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece))\b', t, re.IGNORECASE)
+                if m_bare_usp and not re.search(r'\bmrp\b', t, re.IGNORECASE):
+                    unit_sale_price = m_bare_usp.group(0).strip()
+
+        # 4. Batch / Lot Number
+        if not batch_no:
+            m_batch = re.search(
+                r'\b(?:batch(?:\s*(?:no|number|num)\.?)?|lot(?:\s*(?:no|number|num)\.?)?|b\.?\s*no\.?)[\s.:#-]+(?!(?:no|number)\b)([A-Za-z0-9\/-]{2,20})',
+                t, re.IGNORECASE
+            )
+            if m_batch:
+                batch_no = m_batch.group(1).strip()
+            elif re.search(r'\b(?:batch(?:\s*no\.?)?|lot(?:\s*no\.?)?)\b', t_lower):
+                # Search nearby box
+                b_y = b.get("box", [0, 0, 0, 0])[1] + b.get("box", [0, 0, 0, 0])[3] / 2
+                for other in sorted_boxes:
+                    if other is b:
+                        continue
+                    o_y = other.get("box", [0, 0, 0, 0])[1] + other.get("box", [0, 0, 0, 0])[3] / 2
+                    if abs(o_y - b_y) < 45:
+                        cand = other.get("text", "").strip()
+                        if re.match(r'^[A-Za-z0-9\/-]{3,18}$', cand) and not re.search(r'mrp|rs|date|use|net|pack|taxes', cand, re.IGNORECASE):
+                            batch_no = cand
+                            break
+
+        # 5. Expiry Date / Best Before / Use By
+        if not expiry_date:
+            m_exp = re.search(
+                r'(?:exp(?:iry)?(?:\s*date)?|use\s*by|best\s*before)[\s.:]+([A-Za-z0-9\/\s.-]{3,35})',
+                t, re.IGNORECASE
+            )
+            if m_exp:
+                expiry_date = m_exp.group(1).strip()
+            elif re.search(r'\b(?:use\s*by|best\s*before|exp(?:iry)?)\b', t_lower):
+                b_y = b.get("box", [0, 0, 0, 0])[1] + b.get("box", [0, 0, 0, 0])[3] / 2
+                for other in sorted_boxes:
+                    if other is b:
+                        continue
+                    o_y = other.get("box", [0, 0, 0, 0])[1] + other.get("box", [0, 0, 0, 0])[3] / 2
+                    if abs(o_y - b_y) < 55:
+                        m_date = re.search(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b\d{1,2}\s+(?:months?|days?|years?)\b', other.get("text", ""), re.IGNORECASE)
+                        if m_date:
+                            expiry_date = m_date.group(0).strip()
+                            break
+
+    # Avoid barcode colliding with FSSAI
+    if barcode and fssai_licence and barcode == fssai_licence:
+        barcode = None
+
+    return {
+        "batch_no": {"found": batch_no is not None, "format_valid": batch_no is not None, "text": batch_no, "box": None},
+        "expiry_date": {"found": expiry_date is not None, "format_valid": expiry_date is not None, "text": expiry_date, "box": None},
+        "unit_sale_price": {"found": unit_sale_price is not None, "format_valid": unit_sale_price is not None, "text": unit_sale_price, "box": None},
+        "fssai_licence": {"found": fssai_licence is not None, "format_valid": fssai_licence is not None, "text": fssai_licence, "box": None},
+        "barcode": {"found": barcode is not None, "format_valid": barcode is not None, "text": barcode, "box": None},
+    }
+
+
 def match_declarations(ocr_boxes: list) -> dict:
     result = {}
     for field, rule in RULES.items():
@@ -124,6 +247,11 @@ def match_declarations(ocr_boxes: list) -> dict:
             "box": box["box"] if box else None,
             "text": box["text"] if box else None,
         }
+
+    # Extract additional packaging details (batch, expiry, USP, FSSAI, barcode)
+    extra_details = extract_package_details(ocr_boxes)
+    result.update(extra_details)
+
     return result
 
 
@@ -139,7 +267,10 @@ def merge_verdicts(verdicts: list) -> dict:
     if not verdicts:
         return {}
 
-    fields = verdicts[0].keys()
+    fields = set()
+    for v in verdicts:
+        fields.update(v.keys())
+
     merged = {}
     for field in fields:
         best = None

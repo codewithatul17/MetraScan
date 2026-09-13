@@ -25,6 +25,33 @@ def format_clean_phone(phone_str: Optional[str]) -> Optional[str]:
     return digits
 
 
+def check_phone_exists(phone_str: Optional[str]) -> bool:
+    """Checks if a mobile phone number is already registered to an existing Supabase user."""
+    if not phone_str:
+        return False
+    clean_digits = "".join(filter(str.isdigit, str(phone_str)))
+    if not clean_digits or len(clean_digits) < 10:
+        return False
+
+    target_10 = clean_digits[-10:]
+    supabase_admin = get_supabase_admin()
+    if not supabase_admin:
+        return False
+
+    try:
+        users = supabase_admin.auth.admin.list_users()
+        for u in users:
+            meta = u.user_metadata or {}
+            u_phone = "".join(filter(str.isdigit, str(meta.get("phone", ""))))
+            top_phone = "".join(filter(str.isdigit, str(getattr(u, "phone", "") or "")))
+            if (u_phone and u_phone.endswith(target_10)) or (top_phone and top_phone.endswith(target_10)):
+                return True
+    except Exception as e:
+        logger.warning("Error checking if phone exists: %s", e)
+
+    return False
+
+
 def signup_user(req: SignupRequest) -> Dict[str, Any]:
     supabase = get_supabase_admin()
     if not supabase:
@@ -38,6 +65,25 @@ def signup_user(req: SignupRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
 
     clean_phone = format_clean_phone(req.phone)
+
+    # 1. Pre-check: Verify if this mobile number already exists
+    if clean_phone and len(clean_phone) >= 10:
+        if check_phone_exists(clean_phone):
+            logger.info("Signup rejected: Phone number %s already exists", clean_phone)
+            raise HTTPException(status_code=409, detail="This mobile number already exists. Please log in.")
+
+    # 2. Pre-check: Verify if this email already exists
+    try:
+        users = supabase.auth.admin.list_users()
+        for u in users:
+            if u.email and u.email.strip().lower() == clean_email:
+                logger.info("Signup rejected: Email %s already exists", clean_email)
+                raise HTTPException(status_code=409, detail="A user with this email address already exists. Please log in.")
+    except HTTPException:
+        raise
+    except Exception as check_err:
+        logger.warning("Email pre-check notice: %s", check_err)
+
     user_metadata = {
         "name": req.name or ("Inspector " + req.govId if req.govId else "MetraScan User"),
         "full_name": req.name or ("Inspector " + req.govId if req.govId else "MetraScan User"),
@@ -82,35 +128,10 @@ def signup_user(req: SignupRequest) -> Dict[str, Any]:
     except Exception as e:
         err_msg = str(e)
         logger.warning("Supabase create_user notice: %s", err_msg)
+        if "phone" in err_msg.lower() and ("already exists" in err_msg.lower() or "already registered" in err_msg.lower()):
+            raise HTTPException(status_code=409, detail="This mobile number already exists. Please log in.")
         if "already registered" in err_msg.lower() or "already exists" in err_msg.lower():
-            try:
-                users = supabase.auth.admin.list_users()
-                for u in users:
-                    if u.email.lower() == clean_email:
-                        update_payload = {
-                            "email_confirm": True,
-                            "user_metadata": user_metadata,
-                            "password": req.password
-                        }
-                        if clean_phone:
-                            update_payload["phone"] = clean_phone
-                            update_payload["phone_confirm"] = True
-                        supabase.auth.admin.update_user_by_id(u.id, update_payload)
-                        return {
-                            "ok": True,
-                            "created": False,
-                            "message": "User already exists. Credentials updated.",
-                            "user": {
-                                "id": str(u.id),
-                                "email": u.email,
-                                "phone": clean_phone,
-                                "role": user_metadata.get("role", "consumer"),
-                                "metadata": user_metadata
-                            }
-                        }
-            except Exception as inner_e:
-                logger.warning("Error checking existing user: %s", inner_e)
-            raise HTTPException(status_code=409, detail="A user with this email address already exists.")
+            raise HTTPException(status_code=409, detail="A user with this email address already exists. Please log in.")
         raise HTTPException(status_code=400, detail=f"Supabase Auth error: {err_msg}")
 
 

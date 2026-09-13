@@ -438,13 +438,22 @@
       return false;
     }
 
+    const cleanPhone = data.phone ? data.phone.trim().replace(/\D/g, '').slice(-10) : '';
+    if (cleanPhone.length >= 10 && window.MetraScan && window.MetraScan.API && window.MetraScan.API.checkPhoneExists) {
+      const exists = await window.MetraScan.API.checkPhoneExists(cleanPhone);
+      if (exists) {
+        MetraScan.App.showToast('This mobile number already exists. Please log in.', 'error', 4500);
+        return false;
+      }
+    }
+
     MetraScan.App.showToast('Registering account with Supabase Database...', 'info', 3000);
 
     const signupPayload = {
       email: data.email.trim().toLowerCase(),
       password: data.password,
       name: data.name.trim(),
-      phone: data.phone ? data.phone.trim().replace(/^\+?91[\s-]*/, '') : '9876543210',
+      phone: cleanPhone || '9876543210',
       city: data.city ? data.city.trim() : 'New Delhi',
       state: data.state ? data.state.trim() : 'Delhi',
       address: data.address ? data.address.trim() : '',
@@ -505,6 +514,15 @@
       ? data.email.trim().toLowerCase()
       : ('officer.' + data.govId.toLowerCase().replace(/[^a-z0-9]/g, '') + '@metrascan.gov.in');
 
+    const cleanPhone = data.phone ? data.phone.trim().replace(/\D/g, '').slice(-10) : '';
+    if (cleanPhone.length >= 10 && window.MetraScan && window.MetraScan.API && window.MetraScan.API.checkPhoneExists) {
+      const exists = await window.MetraScan.API.checkPhoneExists(cleanPhone);
+      if (exists) {
+        MetraScan.App.showToast('This mobile number already exists. Please log in.', 'error', 4500);
+        return false;
+      }
+    }
+
     MetraScan.App.showToast('Registering official credentials in Supabase...', 'info', 3000);
 
     const signupPayload = {
@@ -516,7 +534,7 @@
       designation: data.designation ? data.designation.trim() : 'Inspector of Legal Metrology',
       badgeNumber: data.badgeNumber ? data.badgeNumber.trim() : ('LM-IN-' + Math.floor(1000 + Math.random() * 9000)),
       jurisdiction: data.jurisdiction ? data.jurisdiction.trim() : 'Central Enforcement Circle & NCR',
-      phone: data.phone ? data.phone.trim().replace(/^\+?91[\s-]*/, '') : '1123389800',
+      phone: cleanPhone || '1123389800',
       role: 'ministry'
     };
 
@@ -617,15 +635,29 @@
   const activeOTPStore = {};
 
   /**
-   * Send SMS OTP to mobile phone number
+   * Send SMS OTP to mobile phone number (verifies with Supabase first)
    */
-  function sendRegistrationOTP(phoneNum) {
+  async function sendRegistrationOTP(phoneNum) {
     if (!phoneNum || phoneNum.trim().length < 8) {
       MetraScan.App.showToast('Please enter a valid mobile phone number first.', 'error');
       return null;
     }
-    const cleanPhone = phoneNum.trim();
-    const otpCode = '4892';
+    const cleanPhone = phoneNum.trim().replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length < 10) {
+      MetraScan.App.showToast('Please enter a valid 10-digit mobile phone number.', 'error');
+      return null;
+    }
+
+    // Check with Supabase whether this phone number already exists
+    if (window.MetraScan && window.MetraScan.API && window.MetraScan.API.checkPhoneExists) {
+      const exists = await window.MetraScan.API.checkPhoneExists(cleanPhone);
+      if (exists) {
+        MetraScan.App.showToast('This mobile number already exists. Please log in.', 'error', 5000);
+        return null;
+      }
+    }
+
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
     activeOTPStore[cleanPhone] = {
       code: otpCode,
       verified: false,
@@ -645,18 +677,14 @@
     const cleanPhone = phoneNum.trim();
     const stored = activeOTPStore[cleanPhone];
     
-    const isValid = (inputCode === '4892' || inputCode === '1234' || (stored && stored.code === inputCode.trim()));
+    const isValid = (stored && stored.code === (inputCode ? inputCode.trim() : ''));
     if (isValid) {
-      if (activeOTPStore[cleanPhone]) {
-        activeOTPStore[cleanPhone].verified = true;
-      } else {
-        activeOTPStore[cleanPhone] = { code: '4892', verified: true, sentAt: Date.now() };
-      }
+      activeOTPStore[cleanPhone].verified = true;
       MetraScan.App.playScanBeep(true);
-      MetraScan.App.showToast('✓ Mobile number ' + cleanPhone + ' verified via SMS OTP!', 'success');
+      MetraScan.App.showToast('✓ Mobile number ' + cleanPhone + ' verified successfully!', 'success');
       return true;
     } else {
-      MetraScan.App.showToast('Invalid OTP security code. Demo OTP: 4892', 'error');
+      MetraScan.App.showToast('Invalid OTP security code. Please check your SMS and try again.', 'error');
       return false;
     }
   }

@@ -60,56 +60,88 @@
     const violationsCountEl = document.getElementById('stat-total-violations');
     const openCasesCountEl = document.getElementById('stat-open-cases');
 
-    const inspections = MetraScan.App.state.inspections;
-    const violations = MetraScan.App.state.violations;
-    const openCases = MetraScan.App.state.openCases;
+    const inspections = MetraScan.App.state.inspections || [];
+    const violations = MetraScan.App.state.violations || [];
+    const openCases = MetraScan.App.state.openCases || [];
 
-    if (totalInspectionsEl) totalInspectionsEl.textContent = (244 + inspections.length).toString();
-    if (complianceRateEl) complianceRateEl.textContent = '86%';
-    if (violationsCountEl) violationsCountEl.textContent = (28 + violations.length).toString();
+    if (totalInspectionsEl) totalInspectionsEl.textContent = inspections.length.toString();
+    if (violationsCountEl) violationsCountEl.textContent = violations.length.toString();
     if (openCasesCountEl) openCasesCountEl.textContent = openCases.length.toString();
+
+    if (complianceRateEl) {
+      if (inspections.length > 0) {
+        const compliantCount = inspections.filter(i => i.status === 'verified').length;
+        const rate = Math.round((compliantCount / inspections.length) * 100);
+        complianceRateEl.textContent = rate + '%';
+      } else {
+        complianceRateEl.textContent = '100%';
+      }
+    }
   }
 
   /**
-   * Render Compliance Pulse Chart (SVG Interactive Donut Gauge)
+   * Render Compliance Pulse Chart (SVG Dynamic Donut Gauge)
    */
   function renderCompliancePulse() {
     const container = document.getElementById('compliance-pulse-container');
     if (!container) return;
 
-    // 86% Compliant, 11% Violations, 3% Under Review
+    const inspections = MetraScan.App.state.inspections || [];
+    const total = inspections.length;
+
+    if (total === 0) {
+      container.innerHTML = `
+        <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📊</div>
+          <p style="margin-bottom: 0.3rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem;">No statutory inspections filed yet</p>
+          <p style="font-size: 0.82rem; margin: 0 auto; max-width: 320px;">Conduct field inspections to generate live statutory compliance and enforcement metrics.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const compliant = inspections.filter(i => i.status === 'verified').length;
+    const violation = inspections.filter(i => i.status === 'violation').length;
+    const review = inspections.filter(i => i.status === 'review').length;
+
+    const compPct = Math.round((compliant / total) * 100);
+    const vioPct = Math.round((violation / total) * 100);
+    const revPct = 100 - compPct - vioPct;
+
+    const circumference = 427.25;
+    const compArc = (compPct / 100) * circumference;
+    const vioArc = (vioPct / 100) * circumference;
+    const revArc = (revPct / 100) * circumference;
+
     container.innerHTML = `
       <div class="pulse-gauge-wrapper">
         <div class="pulse-chart-circle">
           <svg viewBox="0 0 160 160" class="donut-chart-svg">
             <circle cx="80" cy="80" r="68" class="donut-bg" />
-            <!-- 86% Green Circle Arc: Circumference = 2 * PI * 68 = 427.25. 86% is 367.4 -->
-            <circle cx="80" cy="80" r="68" class="donut-segment donut-compliant" stroke-dasharray="367.4 427.25" stroke-dashoffset="0" />
-            <!-- 11% Red Arc: 11% is 47.0 -->
-            <circle cx="80" cy="80" r="68" class="donut-segment donut-violation" stroke-dasharray="47.0 427.25" stroke-dashoffset="-367.4" />
-            <!-- 3% Amber Arc: 3% is 12.8 -->
-            <circle cx="80" cy="80" r="68" class="donut-segment donut-review" stroke-dasharray="12.8 427.25" stroke-dashoffset="-414.4" />
+            <circle cx="80" cy="80" r="68" class="donut-segment donut-compliant" stroke-dasharray="${compArc} ${circumference}" stroke-dashoffset="0" />
+            <circle cx="80" cy="80" r="68" class="donut-segment donut-violation" stroke-dasharray="${vioArc} ${circumference}" stroke-dashoffset="-${compArc}" />
+            <circle cx="80" cy="80" r="68" class="donut-segment donut-review" stroke-dasharray="${revArc} ${circumference}" stroke-dashoffset="-${compArc + vioArc}" />
           </svg>
           <div class="pulse-center-stat">
-            <span class="pulse-big-number">86%</span>
-            <span class="pulse-stat-label">National<br>Compliance</span>
+            <span class="pulse-big-number">${compPct}%</span>
+            <span class="pulse-stat-label">Statutory<br>Compliance</span>
           </div>
         </div>
         <div class="pulse-legend">
           <div class="pulse-legend-item">
             <span class="legend-dot dot-green"></span>
             <span class="legend-label">Compliant Packages</span>
-            <span class="legend-pct">86% (1,073)</span>
+            <span class="legend-pct">${compPct}% (${compliant})</span>
           </div>
           <div class="pulse-legend-item">
             <span class="legend-dot dot-red"></span>
             <span class="legend-label">Violations & Seizures</span>
-            <span class="legend-pct">11% (137)</span>
+            <span class="legend-pct">${vioPct}% (${violation})</span>
           </div>
           <div class="pulse-legend-item">
             <span class="legend-dot dot-amber"></span>
-            <span class="legend-label">Pending Clarification</span>
-            <span class="legend-pct">3% (38)</span>
+            <span class="legend-label">Under Review</span>
+            <span class="legend-pct">${revPct}% (${review})</span>
           </div>
           <div class="pulse-stat-footnote">
             <span>Audit Standard: Legal Metrology Act (2009) & PCR (2011)</span>
@@ -134,8 +166,17 @@
     if (!list) return;
 
     const items = MetraScan.App.state.inspections.slice(0, 4);
-    let html = '';
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state-small" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+          <p style="margin-bottom: 0.75rem; font-weight: 600;">No field inspections recorded yet.</p>
+          <button class="btn btn-primary btn-sm" data-navigate="ministry-scan">Start Inspection Scan</button>
+        </div>
+      `;
+      return;
+    }
 
+    let html = '';
     items.forEach(function(item) {
       let badgeClass = 'badge-pulse-success';
       let badgeText = '✓ Compliant';
@@ -177,8 +218,16 @@
     if (!list) return;
 
     const cases = MetraScan.App.state.openCases.slice(0, 4);
-    let html = '';
+    if (cases.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state-small" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+          <p style="margin: 0; font-weight: 500;">No open enforcement cases at this time.</p>
+        </div>
+      `;
+      return;
+    }
 
+    let html = '';
     cases.forEach(function(c) {
       let prioClass = 'badge-danger';
       if (c.priority === 'Medium') prioClass = 'badge-warning';
@@ -207,8 +256,16 @@
     if (!list) return;
 
     const vios = MetraScan.App.state.violations.slice(0, 4);
-    let html = '';
+    if (vios.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state-small" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+          <p style="margin: 0; font-weight: 500;">No statutory violations registered.</p>
+        </div>
+      `;
+      return;
+    }
 
+    let html = '';
     vios.forEach(function(v) {
       let sevClass = 'badge-danger';
       if (v.severity === 'Medium') sevClass = 'badge-warning';
@@ -262,10 +319,7 @@
    */
   function initInspectionWizard(preselectProductId, preselectLocation) {
     currentWizardStep = 1;
-    activeEvidenceList = [
-      { id: 'ev-1', type: 'Front Label', url: 'assets/images/product-oil.svg', name: 'Front Packaging Declaration' },
-      { id: 'ev-2', type: 'MRP & Batch', url: 'assets/images/product-oil.svg', name: 'MRP Stamp & Unit Sale Price' }
-    ];
+    activeEvidenceList = [];
 
     // Reset Checklist
     inspectionChecklist = {
@@ -286,15 +340,22 @@
     // Populate products dropdown in Step 1
     const productSelect = document.getElementById('wizard-product-select');
     if (productSelect) {
+      const allProducts = MetraScan.App.state.products || [];
       let optionsHtml = '';
-      MetraScan.App.state.products.forEach(function(p) {
-        const isSel = (preselectProductId && p.id === preselectProductId) || p.id === 'prod-001';
-        optionsHtml += `<option value="${p.id}" ${isSel ? 'selected' : ''}>${p.name} (Barcode: ${p.barcode})</option>`;
-      });
+      if (allProducts.length === 0) {
+        optionsHtml = '<option value="">-- No products in database (upload package photo below) --</option>';
+      } else {
+        allProducts.forEach(function(p, idx) {
+          const isSel = (preselectProductId && p.id === preselectProductId) || (!preselectProductId && idx === 0);
+          optionsHtml += `<option value="${p.id}" ${isSel ? 'selected' : ''}>${p.name} (Barcode: ${p.barcode})</option>`;
+        });
+      }
       productSelect.innerHTML = optionsHtml;
 
       productSelect.onchange = function() {
-        updateWizardProductPreview(this.value);
+        if (this.value) {
+          updateWizardProductPreview(this.value);
+        }
       };
     }
 
@@ -396,7 +457,8 @@
       };
     }
 
-    updateWizardProductPreview(preselectProductId || 'prod-001');
+    const firstId = preselectProductId || (MetraScan.App.state.products[0] ? MetraScan.App.state.products[0].id : null);
+    updateWizardProductPreview(firstId);
     renderWizardChecklistUI();
     renderEvidenceGrid();
     goToWizardStep(1);
@@ -407,8 +469,25 @@
    * Update Product Preview & Auto-Fill All Form Fields in Inspection Wizard
    */
   function updateWizardProductPreview(productId) {
-    const prod = MetraScan.App.getProductById(productId);
-    if (!prod) return;
+    const prod = productId ? MetraScan.App.getProductById(productId) : null;
+    const previewContainer = document.getElementById('wizard-product-preview');
+    const declContainer = document.getElementById('wizard-declarations-info');
+
+    if (!prod) {
+      if (previewContainer) {
+        previewContainer.innerHTML = `
+          <div class="empty-state-small" style="padding: 1.5rem; text-align: center; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: var(--radius-md);">
+            <p style="margin: 0; font-weight: 500;">No product selected. Upload a label photo or scan packaging to begin inspection.</p>
+          </div>
+        `;
+      }
+      if (declContainer) {
+        declContainer.innerHTML = `
+          <p class="text-muted" style="text-align: center; padding: 1.5rem;">Declarations will appear once packaging is scanned or selected.</p>
+        `;
+      }
+      return;
+    }
 
     // Auto-fill form fields: Batch/Lot Number
     const batchInput = document.getElementById('wizard-batch-input');
@@ -788,11 +867,15 @@
    */
   function generateInspectionReport() {
     const productSelect = document.getElementById('wizard-product-select');
-    const productId = productSelect ? productSelect.value : 'prod-001';
-    const product = MetraScan.App.getProductById(productId);
+    const productId = productSelect ? productSelect.value : null;
+    const product = (productId && MetraScan.App.getProductById(productId)) || MetraScan.App.state.products[0] || {
+      id: 'prod-' + Date.now(),
+      name: 'Inspected Commodity Sample',
+      barcode: 'FIELD-' + Date.now()
+    };
 
     const retailerInput = document.getElementById('wizard-retailer-input');
-    const retailer = retailerInput && retailerInput.value.trim() ? retailerInput.value.trim() : 'SuperMarket Retailer, Delhi';
+    const retailer = retailerInput && retailerInput.value.trim() ? retailerInput.value.trim() : 'Retail Market Point';
 
     const notesInput = document.getElementById('wizard-notes-input');
     const notes = notesInput ? notesInput.value.trim() : 'Routine market surveillance inspection conducted.';
@@ -884,15 +967,20 @@
    * Render Report Confirmation View
    */
   function renderReportConfirm(reportId) {
-    const inspection = MetraScan.App.state.inspections.find(i => i.reportId === reportId) || MetraScan.App.state.inspections[0];
+    const inspection = (reportId && MetraScan.App.state.inspections.find(i => i.reportId === reportId)) || MetraScan.App.state.inspections[0];
     const container = document.getElementById('report-confirm-details');
     if (!container) return;
+
+    if (!inspection) {
+      container.innerHTML = '<p class="text-muted" style="text-align: center; padding: 2rem;">No inspection records found.</p>';
+      return;
+    }
 
     let statusBadge = `<span class="badge badge-success">✓ Fully Compliant</span>`;
     if (inspection.status === 'violation') {
       statusBadge = `<span class="badge badge-danger">✕ Violation Recorded</span>`;
     } else if (inspection.status === 'review') {
-      statusBadge = `<span class="badge badge-warning">⚠ Needs Review</span>`;
+      statusBadge = `<span class="badge badge-warning">⚠️ Needs Review</span>`;
     }
 
     container.innerHTML = `
@@ -910,32 +998,25 @@
           <span class="confirm-val">${inspection.officer}</span>
         </div>
         <div class="confirm-row">
-          <span class="confirm-label">Date & Timestamp:</span>
-          <span class="confirm-val">${inspection.date}</span>
-        </div>
-        <div class="confirm-row">
-          <span class="confirm-label">Retail Location:</span>
+          <span class="confirm-label">Jurisdiction / Location:</span>
           <span class="confirm-val">${inspection.retailer}</span>
         </div>
         <div class="confirm-row">
-          <span class="confirm-label">Compliance Outcome:</span>
-          <span class="confirm-val">${statusBadge} (Score: ${inspection.score}%)</span>
+          <span class="confirm-label">Statutory Compliance Status:</span>
+          <span class="confirm-val">${statusBadge}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">Total Evidence Attached:</span>
+          <span class="confirm-val"><strong>${inspection.evidenceCount} Files</strong> (Tamper-evident logs)</span>
         </div>
       </div>
     `;
 
     // Bind action buttons
-    const viewBtn = document.getElementById('btn-confirm-view-report');
-    if (viewBtn) {
-      viewBtn.onclick = function() {
+    const viewReportBtn = document.getElementById('btn-confirm-view-report');
+    if (viewReportBtn) {
+      viewReportBtn.onclick = function() {
         MetraScan.Nav.navigateTo('ministry-report-view', { reportId: inspection.reportId });
-      };
-    }
-
-    const downloadBtn = document.getElementById('btn-confirm-download-report');
-    if (downloadBtn) {
-      downloadBtn.onclick = function() {
-        window.print();
       };
     }
   }
@@ -944,10 +1025,34 @@
    * Render Official Government Printable Report View
    */
   function renderOfficialReport(reportId) {
-    const inspection = MetraScan.App.state.inspections.find(i => i.reportId === reportId) || MetraScan.App.state.inspections[0];
-    const product = MetraScan.App.getProductById(inspection.productId) || MetraScan.App.state.products[0];
+    const inspection = (reportId && MetraScan.App.state.inspections.find(i => i.reportId === reportId)) || MetraScan.App.state.inspections[0];
     const container = document.getElementById('official-report-document');
     if (!container) return;
+
+    if (!inspection) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding: 3rem 1.5rem; text-align: center;">
+          <div class="empty-icon" style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+          <h3 style="margin-bottom: 0.5rem;">No Inspection Report Found</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Conduct a field inspection to generate an authenticated MetraCert report.</p>
+          <button class="btn btn-primary" data-navigate="ministry-scan">Start Inspection</button>
+        </div>
+      `;
+      return;
+    }
+
+    const product = MetraScan.App.getProductById(inspection.productId) || {
+      name: inspection.productName || 'Inspected Commodity',
+      brand: 'Packaged Commodity',
+      category: 'General FMCG',
+      mrp: 'Standard Retail Price',
+      netQuantity: '1 Standard Unit',
+      batchNo: 'N/A',
+      mfgDate: 'N/A',
+      expDate: 'N/A',
+      licenceNo: 'Verified Under Field Audit',
+      mfgAddress: 'Inspected Premises'
+    };
 
     let checklistRowsHtml = '';
     const checklistMap = [
@@ -1553,7 +1658,8 @@
       if (!isValidProduct) {
         if (procOverlay) procOverlay.style.display = 'none';
         MetraScan.App.playScanBeep(false);
-        MetraScan.App.showToast('⚠️ Not a valid packaged commodity! No mandatory declarations (MRP, Net Quantity, Mfg Date) were detected on this image. Please scan a clear back-of-pack label.', 'error', 7000);
+        MetraScan.App.showToast('⚠️ Verification Rejected — Package non-compliant with Rule 6(1)', 'error', 4000);
+        MetraScan.App.showInvalidScanModal(scanData, sourceName || file.name, photoUrl, true);
         return;
       }
 
@@ -1574,7 +1680,7 @@
       if (laser) laser.classList.add('scanner-laser-matched');
 
       const locInput = document.getElementById('inspector-scan-location-input');
-      const locationVal = locInput && locInput.value.trim() ? locInput.value.trim() : 'Shree Ganesh Supermarket, Sector 22, Rohini, New Delhi';
+      const locationVal = locInput && locInput.value.trim() ? locInput.value.trim() : 'Retail Inspection Point';
 
       if (procStatus) procStatus.textContent = '✓ Inspection Audit Complete! Loading Case Wizard...';
 
@@ -1620,7 +1726,7 @@
     if (laser) laser.classList.add('scanner-laser-matched');
 
     const locInput = document.getElementById('inspector-scan-location-input');
-    const locationVal = locInput && locInput.value.trim() ? locInput.value.trim() : 'Shree Ganesh Supermarket, Sector 22, Rohini, New Delhi';
+    const locationVal = locInput && locInput.value.trim() ? locInput.value.trim() : 'Retail Inspection Point';
 
     MetraScan.App.showToast('Commodity Identified: ' + product.name, 'success', 1400);
 
@@ -1730,7 +1836,19 @@
     const list = document.getElementById('ministry-history-list');
     if (!list) return;
 
-    const items = MetraScan.App.state.inspections;
+    const items = MetraScan.App.state.inspections || [];
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
+          <p style="font-size: 1rem; margin-bottom: 0.4rem; font-weight: 600; color: var(--text-main);">No inspection reports filed yet</p>
+          <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">Completed field audits and statutory verifications will appear here.</p>
+          <button class="btn btn-primary btn-sm" data-navigate="ministry-scan">Start New Inspection</button>
+        </div>
+      `;
+      return;
+    }
+
     let html = '';
 
     items.forEach(function(item) {

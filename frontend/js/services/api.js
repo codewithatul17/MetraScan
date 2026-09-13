@@ -162,16 +162,16 @@
   function mapVerdictToProduct(scanData, sourceName, user, customPhotoUrl) {
     const currentUser = user || (window.MetraScan && window.MetraScan.Auth && window.MetraScan.Auth.getCurrentUser ? window.MetraScan.Auth.getCurrentUser() : null);
     const uniqueId = 'scan-' + Date.now() + '-' + Math.floor(1000 + Math.random() * 9000);
-    const barcodeId = '890' + Math.floor(1000000000 + Math.random() * 9000000000);
-    const qrId = 'QR-IN-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
 
     const verdict = scanData.verdict || {};
     const firstImg = (scanData.images && scanData.images[0]) ? scanData.images[0] : null;
 
     // Use the backend's real OpenCV-annotated image or the captured photo
-    let displayImage = customPhotoUrl || 'assets/images/product-oil.svg';
+    let displayImage = customPhotoUrl || '';
     if (firstImg && firstImg.image_base64) {
       displayImage = 'data:image/jpeg;base64,' + firstImg.image_base64;
+    } else if (!displayImage) {
+      displayImage = 'assets/images/product-oil.svg';
     }
 
     // Extract declarations from OCR verdict
@@ -182,14 +182,76 @@
     const careData = verdict.consumer_care || {};
     const genericNameData = verdict.generic_name || {};
 
-    // Determine values
+    // Genuine extracted packaging fields (zero hallucination)
+    const barcodeData = verdict.barcode || {};
+    const qrData = verdict.qr_code || {};
+    const batchData = verdict.batch_no || {};
+    const expData = verdict.expiry_date || {};
+    const uspData = verdict.unit_sale_price || {};
+    const fssaiData = verdict.fssai_licence || {};
+
+    // Extract Ingredient Health & Safety Analysis
+    const ingredientAnalysis = verdict.ingredient_analysis || (firstImg && firstImg.ingredient_analysis) || {
+      found: false,
+      raw_text: null,
+      score: null,
+      grade: null,
+      rating_title: 'Ingredients Panel Not Detected',
+      rating_summary: 'Ingredients declaration was not detected in this photo. Scan the back-of-pack ingredients table for an instant health & safety score.',
+      additives: [],
+      allergens: [],
+      upf_markers: [],
+      clean_ingredients: [],
+      summary_counts: {
+        high_concern: 0,
+        moderate_concern: 0,
+        clean: 0,
+        allergens: 0,
+        upf_count: 0,
+        total_ingredients: 0
+      }
+    };
+
+    // Determine honest values directly from OCR results
     const mrpText = mrpData.text ? ('₹' + mrpData.text.replace(/[^0-9.]/g, '') + ' (Incl. of all taxes)') : 'Not detected on label';
     const mrpValue = mrpData.text ? parseFloat(mrpData.text.replace(/[^0-9.]/g, '')) || 0 : 0;
     const netQtyText = netQtyData.text || 'Not detected on label';
     const mfgDateText = mfgDateData.text || 'Not detected on label';
     const mfrText = mfrData.text || 'Not detected on label';
     const careText = careData.text || 'Not detected on label';
-    const productName = genericNameData.text || (sourceName ? `Scanned Packaged Commodity (${sourceName.replace(/\.[^/.]+$/, '')})` : 'Scanned Packaged Commodity');
+
+    // Barcode: strictly genuine or Not detected
+    const barcodeVal = (barcodeData.found && barcodeData.text) ? barcodeData.text : 'Not detected on scanned package';
+
+    // QR Seal: strictly genuine or None detected
+    const qrVal = (qrData.found && qrData.text) ? qrData.text : 'None detected';
+
+    // Batch No: strictly genuine or Not detected
+    const batchVal = (batchData.found && batchData.text) ? batchData.text : 'Not detected on package';
+
+    // Unit Sale Price: strictly genuine OCR extraction or Not declared
+    const uspVal = (uspData.found && uspData.text) ? uspData.text : 'Not declared on package';
+
+    // Expiry / Best Before: strictly genuine or Not detected
+    const expVal = (expData.found && expData.text) ? expData.text : 'Not detected on package';
+
+    // FSSAI Statutory License: strictly genuine or Not detected
+    const fssaiVal = (fssaiData.found && fssaiData.text) ? ('FSSAI Lic. No. ' + fssaiData.text) : 'FSSAI not detected on scanned surface';
+
+    // Clean Brand Name Extraction from manufacturer line
+    let brandName = 'Brand not detected on label';
+    if (mfrData.found && mfrText && mfrText !== 'Not detected on label') {
+      let cleaned = mfrText.replace(/^(?:manufactured|marketed|mfg|packed|imported)\s*(?:by|at)?[\s.:]*/i, '').trim();
+      const sepIdx = cleaned.search(/[,;\/\n]/);
+      if (sepIdx > 0) {
+        cleaned = cleaned.substring(0, sepIdx).trim();
+      }
+      if (cleaned.length >= 2) {
+        brandName = cleaned;
+      }
+    }
+
+    const productName = genericNameData.text || (sourceName ? sourceName.replace(/\.[^/.]+$/, '') : 'Scanned Packaged Commodity');
 
     // Rule 6(1) audit checks mapping
     const declarations = {
@@ -199,19 +261,19 @@
         value: productName
       },
       fssaiLicence: {
-        status: 'pass',
-        label: 'FSSAI Logo & Statutory Registration',
-        value: 'Verified against Central Registration Registry'
+        status: fssaiData.found ? 'pass' : 'review',
+        label: 'FSSAI Statutory Registration',
+        value: fssaiVal
       },
       batchAndMfg: {
-        status: mfgDateData.found && mfgDateData.format_valid ? 'pass' : (mfgDateData.found ? 'review' : 'violation'),
+        status: (mfgDateData.found && mfgDateData.format_valid) ? 'pass' : (mfgDateData.found ? 'review' : 'violation'),
         label: 'Batch/Lot No. & Mfg Date (Rule 6(1)(d))',
-        value: mfgDateData.found ? (mfgDateData.text + (mfgDateData.format_valid ? ' (Format Compliant)' : ' (Format Irregular)')) : 'Missing on package label'
+        value: (batchVal !== 'Not detected on package' ? (`Batch: ${batchVal} · `) : '') + (mfgDateData.found ? mfgDateData.text : 'Mfg date not detected on label')
       },
       bestBefore: {
-        status: mfgDateData.found ? 'pass' : 'review',
+        status: expData.found ? 'pass' : 'review',
         label: 'Best Before / Expiry Indication',
-        value: mfgDateData.found ? 'Standard declaration period applicable' : 'Check label manually'
+        value: expVal !== 'Not detected on package' ? expVal : 'Expiry / Best Before date not detected on scanned surface'
       },
       mfgDetails: {
         status: mfrData.found && mfrData.format_valid ? 'pass' : (mfrData.found ? 'review' : 'violation'),
@@ -226,40 +288,32 @@
       mrpDeclaration: {
         status: mrpData.found && mrpData.format_valid ? 'pass' : (mrpData.found ? 'review' : 'violation'),
         label: 'MRP & Unit Sale Price (Rule 6(1)(e))',
-        value: mrpData.found ? (mrpData.text + (mrpData.format_valid ? ' (Statutory format verified)' : ' (Missing unit price/format error)')) : 'MRP declaration missing / smudged'
+        value: mrpData.found ? (mrpText + (uspVal !== 'Not declared on package' ? (` · USP: ${uspVal}`) : '')) : 'MRP declaration not detected'
       },
       consumerCare: {
         status: careData.found && careData.format_valid ? 'pass' : (careData.found ? 'review' : 'violation'),
         label: 'Consumer Care Helpline (Rule 6(2))',
-        value: careData.found ? careData.text : 'Customer grievance redressal missing'
+        value: careData.found ? careData.text : 'Customer grievance redressal not detected'
       }
     };
 
     // Calculate score and status based on real findings
     const keysToCheck = ['netQuantity', 'mrpDeclaration', 'batchAndMfg', 'mfgDetails', 'consumerCare'];
-    let violationCount = 0;
     let reviewCount = 0;
-    let passCount = 0;
 
     keysToCheck.forEach(k => {
       const st = declarations[k].status;
-      if (st === 'violation') violationCount++;
-      else if (st === 'review') reviewCount++;
-      else passCount++;
+      if (st === 'review' || st === 'violation') reviewCount++;
     });
 
     let overallStatus = 'verified';
     let statusLabel = 'VERIFIED COMPLIANT';
     let score = 95;
 
-    if (violationCount > 0) {
-      overallStatus = 'violation';
-      statusLabel = 'CRITICAL VIOLATION FOUND';
-      score = Math.max(25, 95 - (violationCount * 25) - (reviewCount * 10));
-    } else if (reviewCount > 0 || (firstImg && firstImg.calibrated === false)) {
+    if (reviewCount > 0 || (firstImg && firstImg.calibrated === false)) {
       overallStatus = 'review';
       statusLabel = 'NEEDS REVIEW / ADVISORY';
-      score = Math.max(65, 95 - (reviewCount * 12));
+      score = Math.max(75, 95 - (reviewCount * 5));
     }
 
     const now = new Date();
@@ -271,11 +325,11 @@
 
     return {
       id: uniqueId,
-      barcode: barcodeId,
-      qrId: qrId,
+      barcode: barcodeVal,
+      qrId: qrVal,
       name: productName,
-      brand: mfrText.split(/[\s,]+/)[0] || 'Packaged Commodity',
-      category: 'Packaged Commodity (OCR Verified)',
+      brand: brandName,
+      category: 'Packaged Commodity (OCR Audited)',
       image: displayImage,
       manufacturer: mfrText,
       mfgAddress: mfrText,
@@ -283,27 +337,46 @@
       mrp: mrpText,
       mrpValue: mrpValue,
       netQuantity: netQtyText,
-      unitSalePrice: mrpValue > 0 ? ('₹' + (mrpValue / 10).toFixed(2) + ' per standard unit') : 'See package',
-      batchNo: 'LOT-' + barcodeId.slice(-6),
+      unitSalePrice: uspVal,
+      batchNo: batchVal,
       mfgDate: mfgDateText,
-      expDate: 'Standard Expiration Applicable',
-      bestBefore: 'Declared on Package',
+      expDate: expVal,
+      bestBefore: expVal,
       status: overallStatus,
       statusLabel: statusLabel,
       score: score,
       verifiedDate: verifiedDateStr,
-      licenceNo: 'Legal Metrology Verified · SIH26034 OCR Engine',
+      licenceNo: fssaiVal,
       declarations: declarations,
-      registryStatus: {
-        legalMetrology: overallStatus === 'violation' ? 'Violation Notice Triggered (Sec 36 LM Act)' : 'Active & Audited via Live OCR',
-        nationalRegistry: overallStatus === 'violation' ? 'Deficiencies logged to Enforcement Database' : 'Matches Legal Metrology Database',
-        qrIntegrity: firstImg && firstImg.calibrated ? '₹5 Coin Reference Calibrated (mm accurate)' : 'Uncalibrated (No reference coin detected)'
-      },
       rawBackendVerdict: verdict,
       calibrated: firstImg ? firstImg.calibrated : false,
+      ingredientAnalysis: ingredientAnalysis,
       userId: (user && user.id) || (currentUser && currentUser.id) || (verdict && verdict.user_id) || null,
       userEmail: (user && user.email) || (currentUser && currentUser.email) || (verdict && verdict.user_email) || null
     };
+  }
+
+  /**
+  /**
+   * Checks if a mobile phone number is already registered in Supabase
+   * @param {string} phone - Mobile number to verify
+   * @returns {Promise<boolean>} True if number already exists
+   */
+  async function checkPhoneExists(phone) {
+    if (!phone) return false;
+    const clean = String(phone).replace(/\D/g, '').slice(-10);
+    if (clean.length < 10) return false;
+
+    try {
+      const resp = await fetch(`${apiBaseUrl}/auth/check-phone?phone=${encodeURIComponent(clean)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        return Boolean(data.exists);
+      }
+    } catch (err) {
+      console.warn('Backend /auth/check-phone error:', err);
+    }
+    return false;
   }
 
   /**
@@ -321,7 +394,8 @@
         return { ok: true, source: 'backend_supabase', user: data.user };
       }
       if (resp.status === 409) {
-        return { ok: false, error: 'A user with this email address already exists. Please log in.' };
+        const errMsg = (data && data.detail) ? data.detail : 'This mobile number or email already exists. Please log in.';
+        return { ok: false, error: errMsg, code: 'ALREADY_EXISTS' };
       }
       if (data && data.detail) {
         return { ok: false, error: typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail) };
@@ -413,15 +487,6 @@
 
       if (emailToTry && emailToTry.includes('@')) {
         const passwordsToTry = [password];
-        if (password === 'password123' && !passwordsToTry.includes('DemoConsumerPass123!')) {
-          passwordsToTry.push('DemoConsumerPass123!');
-        } else if (password === 'DemoConsumerPass123!' && !passwordsToTry.includes('password123')) {
-          passwordsToTry.push('password123');
-        } else if (password === 'officer2026' && !passwordsToTry.includes('DemoMinistryPass123!')) {
-          passwordsToTry.push('DemoMinistryPass123!');
-        } else if (password === 'DemoMinistryPass123!' && !passwordsToTry.includes('officer2026')) {
-          passwordsToTry.push('officer2026');
-        }
 
         for (const pwd of passwordsToTry) {
           try {
@@ -526,6 +591,7 @@
     mapVerdictToProduct: mapVerdictToProduct,
     fetchUserScans: fetchUserScans,
     getSupabase: getSupabase,
+    checkPhoneExists: checkPhoneExists,
     authSignup: authSignup,
     authLogin: authLogin,
     updateProfile: updateProfile,

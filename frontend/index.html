@@ -105,6 +105,10 @@
               </div>
             </div>
             <div class="role-top-actions">
+              <button type="button" class="btn-server-indicator btn-open-server-modal" title="Backend Server Connection Settings">
+                <span class="server-dot"></span>
+                <span class="server-status-text">Server: Live</span>
+              </button>
               <div class="role-system-status" title="Central Packaged Commodity Database online">
                 <span class="pulse-dot"></span>
                 <span class="status-label">PCR 2011 Registry Live</span>
@@ -244,48 +248,6 @@
                     <span>Launch Consumer Portal</span>
                     <span class="role-btn-arrow">→</span>
                   </div>
-                  <button type="button" class="role-btn-demo" id="btn-hero-consumer-demo" title="Instant Access as Priya Sharma">⚡ Instant Citizen Demo</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Interactive Live Verification Showcase -->
-            <div class="role-showcase-section">
-              <div class="role-section-header">
-                <div class="role-section-badge">LIVE DATABASE SHOWCASE</div>
-                <h3 class="role-section-title">Explore Sample Commodity Verifications</h3>
-                <p class="role-section-subtitle">Click any commodity below to view real-time statutory audit &amp; compliance breakdown</p>
-              </div>
-              <div class="role-showcase-grid">
-                <div class="role-sample-card" data-navigate="consumer-verification" data-params='{"productId":"prod-001"}'>
-                  <div class="sample-card-badge status-verified"><span class="status-dot-green"></span> 98% COMPLIANT</div>
-                  <div class="sample-img-box"><img src="assets/images/product-oil.svg" alt="Groundnut Oil" class="sample-prod-img"></div>
-                  <div class="sample-info">
-                    <span class="sample-category">Edible Oils &amp; Fats</span>
-                    <h4 class="sample-name">NatureFresh Cold Pressed Groundnut Oil</h4>
-                    <div class="sample-meta"><span>Net Quantity: 1 Litre (910 g)</span><span>MRP: ₹245.00 (₹24.50 / 100ml)</span></div>
-                    <div class="sample-cta">View Audit Record →</div>
-                  </div>
-                </div>
-                <div class="role-sample-card" data-navigate="consumer-verification" data-params='{"productId":"prod-002"}'>
-                  <div class="sample-card-badge status-verified"><span class="status-dot-green"></span> 96% COMPLIANT</div>
-                  <div class="sample-img-box"><img src="assets/images/product-flour.svg" alt="Sharbati Atta" class="sample-prod-img"></div>
-                  <div class="sample-info">
-                    <span class="sample-category">Food Grains &amp; Flours</span>
-                    <h4 class="sample-name">Organic Whole Wheat Sharbati Atta</h4>
-                    <div class="sample-meta"><span>Net Quantity: 5 kg Net Weight</span><span>MRP: ₹380.00 (₹76.00 / kg)</span></div>
-                    <div class="sample-cta">View Audit Record →</div>
-                  </div>
-                </div>
-                <div class="role-sample-card sample-card-warning" data-navigate="consumer-verification" data-params='{"productId":"prod-003"}'>
-                  <div class="sample-card-badge status-violation"><span class="status-dot-red"></span> VIOLATION DETECTED</div>
-                  <div class="sample-img-box"><img src="assets/images/product-drink.svg" alt="Energy Drink" class="sample-prod-img"></div>
-                  <div class="sample-info">
-                    <span class="sample-category">Caffeinated Beverages</span>
-                    <h4 class="sample-name">VitalBoost Taurine Energy Drink</h4>
-                    <div class="sample-meta"><span class="text-danger-strong">Missing Unit Sale Price (USP)</span><span class="text-danger-strong">Consumer Helpline Unresponsive</span></div>
-                    <div class="sample-cta text-danger-strong">Inspect Violations →</div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -375,14 +337,14 @@
           </div>
 
           <!-- Customer Sign In Form -->
-          <form class="nfr-auth-form" id="consumer-login-form">
+          <form class="nfr-auth-form" id="consumer-login-form" autocomplete="off">
             <div class="nfr-input-group">
               <span class="nfr-input-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                 </svg>
               </span>
-              <input type="text" id="consumer-phone" class="nfr-input" placeholder="Mobile phone number or email" required value="9876543210">
+              <input type="text" id="consumer-phone" class="nfr-input" placeholder="Example: 9125897827 or email" autocomplete="off" value="" required>
             </div>
 
             <div class="nfr-input-group">
@@ -392,7 +354,7 @@
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
               </span>
-              <input type="password" id="consumer-password" class="nfr-input" placeholder="Password" required value="password123">
+              <input type="password" id="consumer-password" class="nfr-input" placeholder="Example: ••••••••" autocomplete="new-password" value="" required>
               <button type="button" class="nfr-password-toggle" id="btn-toggle-consumer-pw" title="Toggle password visibility">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -432,13 +394,6 @@
             <div class="nfr-sso-arrow">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </div>
-          </div>
-
-          <!-- Quick Demo Shortcut Pill -->
-          <div class="quick-demo-box" style="margin-top: 0; margin-bottom: 20px;">
-            <button type="button" class="btn btn-secondary btn-sm btn-block" id="btn-quick-consumer-demo">
-              ⚡ Instant Citizen Demo Access (Priya Sharma)
-            </button>
           </div>
 
           <!-- Register Link -->
@@ -483,13 +438,13 @@
                 <div class="form-group">
                   <label class="form-label" for="consumer-signup-phone">Mobile Phone *</label>
                   <div class="phone-input-with-btn" style="display: flex; gap: 6px;">
-                    <input type="tel" id="consumer-signup-phone" class="form-input" placeholder="9876543210" required>
+                    <input type="tel" id="consumer-signup-phone" class="form-input" placeholder="e.g. 9810012345" required>
                     <button type="button" class="btn btn-outline btn-sm btn-send-otp-trigger" id="btn-consumer-send-otp" style="white-space: nowrap; font-size: 0.78rem;">Send OTP</button>
                   </div>
                   <div class="otp-verification-box" id="consumer-otp-box" style="display: none; margin-top: 8px; background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent! Demo Code: <strong>4892</strong></div>
+                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent to your mobile phone</div>
                     <div style="display: flex; gap: 6px;">
-                      <input type="text" id="consumer-otp-input" class="form-input mono-text" placeholder="Enter OTP (4892)" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
+                      <input type="text" id="consumer-otp-input" class="form-input mono-text" placeholder="Enter 4-digit OTP" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
                       <button type="button" class="btn btn-success btn-sm" id="btn-consumer-verify-otp">Verify</button>
                     </div>
                   </div>
@@ -547,7 +502,11 @@
               <img src="assets/logo/metrascan-horizontal.png" alt="MetraScan" class="app-brand-logo">
             </a>
           </div>
-          <div class="header-right">
+          <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn-server-indicator btn-open-server-modal" title="Backend Server Connection Settings">
+              <span class="server-dot"></span>
+              <span class="server-status-text">Server: Live</span>
+            </button>
             <button class="btn-icon-header" id="btn-consumer-notifications" title="Notifications">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -578,9 +537,10 @@
                 </svg>
                 Scan Product
               </button>
-              <button class="btn btn-hero-secondary btn-lg" id="btn-home-enter-code">
-                Enter Product Code
+              <button class="btn btn-hero-secondary btn-lg" id="btn-home-scan-ingredients">
+                <span style="font-size: 1.1rem; margin-right: 4px;">🌿</span> Scan Ingredients
               </button>
+              <input type="file" id="input-home-ingredients-file" accept="image/*" style="display: none;">
             </div>
           </div>
 
@@ -635,7 +595,13 @@
           <div class="scanner-nav-bar">
             <button class="btn-scanner-icon" data-back title="Back">←</button>
             <span class="scanner-nav-title">Scan Product</span>
-            <button class="btn-scanner-icon" id="btn-scanner-torch" title="Flashlight">⚡</button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn-server-indicator btn-open-server-modal" title="Backend Server Settings" style="padding: 4px 8px; font-size: 0.72rem;">
+                <span class="server-dot"></span>
+                <span class="server-status-text">Server</span>
+              </button>
+              <button class="btn-scanner-icon" id="btn-scanner-torch" title="Flashlight">⚡</button>
+            </div>
           </div>
 
           <!-- Video Stream and Targeting Overlays -->
@@ -1014,10 +980,10 @@
               <p class="auth-subtitle">Secure access for authorized government officials.</p>
             </div>
 
-            <form class="auth-form" id="ministry-login-form">
+            <form class="auth-form" id="ministry-login-form" autocomplete="off">
               <div class="form-group">
                 <label class="form-label" for="ministry-gov-id">Government Official ID</label>
-                <input type="text" id="ministry-gov-id" class="form-input" placeholder="e.g. GOV-LM-2026-4481" required value="GOV-LM-2026-4481">
+                <input type="text" id="ministry-gov-id" class="form-input" placeholder="e.g. GOV-LM-2026-4481" autocomplete="off" value="" required>
               </div>
 
               <div class="form-group">
@@ -1032,7 +998,7 @@
 
               <div class="form-group">
                 <label class="form-label" for="ministry-password">Security PIN / Password</label>
-                <input type="password" id="ministry-password" class="form-input" placeholder="••••••••" required value="officer2026">
+                <input type="password" id="ministry-password" class="form-input" placeholder="••••••••" autocomplete="new-password" value="" required>
               </div>
 
               <button type="submit" class="btn btn-primary btn-block">Continue as Official</button>
@@ -1118,13 +1084,13 @@
                 <div class="form-group">
                   <label class="form-label" for="ministry-signup-phone">Contact Telephone *</label>
                   <div class="phone-input-with-btn" style="display: flex; gap: 6px;">
-                    <input type="tel" id="ministry-signup-phone" class="form-input" placeholder="1123380000" required>
+                    <input type="tel" id="ministry-signup-phone" class="form-input" placeholder="e.g. 1123380000" required>
                     <button type="button" class="btn btn-outline btn-sm btn-send-otp-trigger" id="btn-ministry-send-otp" style="white-space: nowrap; font-size: 0.78rem;">Send OTP</button>
                   </div>
                   <div class="otp-verification-box" id="ministry-otp-box" style="display: none; margin-top: 8px; background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent! Demo Code: <strong>4892</strong></div>
+                    <div style="font-size: 0.76rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">📱 SMS OTP sent to contact telephone</div>
                     <div style="display: flex; gap: 6px;">
-                      <input type="text" id="ministry-otp-input" class="form-input mono-text" placeholder="Enter OTP (4892)" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
+                      <input type="text" id="ministry-otp-input" class="form-input mono-text" placeholder="Enter 4-digit OTP" maxlength="6" style="letter-spacing: 3px; font-weight: 700; text-align: center;">
                       <button type="button" class="btn btn-success btn-sm" id="btn-ministry-verify-otp">Verify</button>
                     </div>
                   </div>
@@ -1176,6 +1142,10 @@
             </div>
           </div>
           <div class="ministry-officer-badge" style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" class="btn-server-indicator btn-open-server-modal" title="Backend Server Connection Settings">
+              <span class="server-dot"></span>
+              <span class="server-status-text">Server: Live</span>
+            </button>
             <div class="officer-info-text">
               <div class="officer-name" id="ministry-officer-name">Insp. Rajesh Verma</div>
               <div class="officer-dept" id="ministry-officer-dept">Legal Metrology Dept</div>
@@ -1436,12 +1406,12 @@
 
             <div class="form-group" style="margin-bottom: 16px;">
               <label class="form-label" for="wizard-retailer-input">Retailer / Market Location</label>
-              <input type="text" id="wizard-retailer-input" class="form-input" placeholder="e.g. Big Bazaar, Connaught Place, New Delhi" value="Shree Ganesh Supermarket, Sector 22, Rohini, New Delhi">
+              <input type="text" id="wizard-retailer-input" class="form-input" placeholder="e.g. Retailer Premises / Market Location">
             </div>
 
             <div class="form-group">
               <label class="form-label" for="wizard-batch-input">Inspected Batch / Lot Number</label>
-              <input type="text" id="wizard-batch-input" class="form-input" value="NF-GO-2026-0819">
+              <input type="text" id="wizard-batch-input" class="form-input" placeholder="e.g. Batch / Lot Number">
             </div>
           </div>
 
@@ -1891,12 +1861,7 @@
       <form id="form-manual-code">
         <div class="form-group" style="margin-bottom: 12px;">
           <label class="form-label" for="manual-barcode-input">Barcode Number or QR ID</label>
-          <input type="text" id="manual-barcode-input" class="form-input" placeholder="e.g. 8901234567890 or QR-IN-2026-9812">
-        </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-          <span style="font-size: 0.78rem; color: var(--text-muted); width: 100%;">Demo barcodes:</span>
-          <button type="button" class="btn btn-sm btn-outline btn-quick-code" data-code="8901234567890">8901234567890</button>
-          <button type="button" class="btn btn-sm btn-outline btn-quick-code" data-code="8905551234567">8905551234567</button>
+          <input type="text" id="manual-barcode-input" class="form-input" placeholder="e.g. 13-digit EAN Barcode or QR ID">
         </div>
 
         <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px; margin-bottom: 14px;">
@@ -1922,6 +1887,31 @@
 
         <button type="submit" class="btn btn-primary btn-block">Verify Product & Audit Declarations</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Scan Ingredients & Additives Option -->
+  <div class="modal-container" id="modal-scan-ingredients">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box" style="max-width: 440px;">
+      <div class="modal-header-row">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">🌿</span>
+          <h3 style="margin: 0;">Scan Ingredients & Additives</h3>
+        </div>
+        <button class="modal-close-btn" data-modal-close="modal-scan-ingredients">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 18px; line-height: 1.45;">
+        Audit additives, detect allergens, and compute the instant <strong>Clean Label Health Score (0–100)</strong> from the packaging ingredients panel.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button type="button" class="btn btn-primary btn-block" id="btn-choice-camera-ingredients" style="padding: 12px; font-size: 0.95rem; justify-content: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📷</span> Open Live Camera Scanner
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" id="btn-choice-upload-ingredients" style="padding: 12px; font-size: 0.95rem; justify-content: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📁</span> Upload Ingredients Photo
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2008,14 +1998,7 @@
       <form id="form-inspector-manual-code">
         <div class="form-group" style="margin-bottom: 12px;">
           <label class="form-label" for="inspector-manual-barcode-input">Barcode Number / Package ID</label>
-          <input type="text" id="inspector-manual-barcode-input" class="form-input" placeholder="e.g. 8901234567890 or 8909998887776">
-        </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-          <span style="font-size: 0.78rem; color: var(--text-muted); width: 100%;">Quick select field targets:</span>
-          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8901234567890">8901234567890 (Oil)</button>
-          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8907654321098">8907654321098 (Atta)</button>
-          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8905551234567">8905551234567 (Drink)</button>
-          <button type="button" class="btn btn-sm btn-outline btn-inspector-quick-code" data-code="8909998887776">8909998887776 (Cookies)</button>
+          <input type="text" id="inspector-manual-barcode-input" class="form-input" placeholder="e.g. 13-digit EAN Barcode or Package Serial">
         </div>
 
         <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px; margin-bottom: 14px;">
@@ -2044,6 +2027,93 @@
           <button type="submit" class="btn btn-primary" style="flex: 1.5;">Start Field Inspection →</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 5: INVALID PACKAGING / DECLARATION REJECTION DIAGNOSTIC
+       =================================================================== -->
+  <div class="modal-container" id="modal-scan-invalid">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content-box" style="max-width: 540px; max-height: 88vh; overflow-y: auto; padding: 22px;">
+      
+      <!-- Top Status Header -->
+      <div class="modal-header-row" style="margin-bottom: 12px; align-items: flex-start;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1.5px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            ⚠️
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #ef4444;">
+              Verification Rejected
+            </h3>
+            <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">
+              Legal Metrology Rule 6(1) Non-Compliance Diagnosis
+            </p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-modal-close="modal-scan-invalid" title="Close">✕</button>
+      </div>
+
+      <!-- Scanned Image Thumbnail & Quick Alert -->
+      <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;">
+        <p id="invalid-scan-primary-reason" style="margin: 0; font-size: 0.86rem; font-weight: 600; color: var(--text-main); line-height: 1.45;">
+          This packaging cannot be verified because mandatory Legal Metrology statutory declarations are missing or illegible.
+        </p>
+      </div>
+
+      <!-- Scanned Photo Preview & Diagnostics Box -->
+      <div id="invalid-scan-preview-wrapper" style="display: none; margin-bottom: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; text-align: center; max-height: 160px;">
+        <img id="invalid-scan-image-preview" src="" alt="Scanned Packaging" style="max-height: 160px; width: auto; object-fit: contain; margin: 0 auto; display: block;">
+      </div>
+
+      <!-- Mandatory Statutory Declarations Audit Breakdown -->
+      <div style="margin-bottom: 18px;">
+        <h4 style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <span>Statutory Declarations Audit</span>
+          <span style="font-size: 0.72rem; color: #ef4444; font-weight: 700;">Mandatory under PCR 2011</span>
+        </h4>
+        
+        <div id="invalid-scan-declarations-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Raw OCR Readout (Collapsible) -->
+      <details style="margin-bottom: 18px; background: var(--bg-subtle, rgba(0,0,0,0.03)); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px;">
+        <summary style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">
+          🔍 Inspect Raw Text Read by AI OCR Engine (<span id="invalid-scan-ocr-count">0 lines</span>)
+        </summary>
+        <div id="invalid-scan-raw-text" style="margin-top: 8px; font-family: monospace; font-size: 0.78rem; max-height: 120px; overflow-y: auto; color: var(--text-muted); background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); white-space: pre-wrap; line-height: 1.4;">
+          No text detected.
+        </div>
+      </details>
+
+      <!-- Troubleshooting & Compliance Guidance Tips -->
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px;">
+        <div style="font-size: 0.8rem; font-weight: 800; color: #0284c7; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span>💡</span>
+          <span>How to Get a Successful Verification:</span>
+        </div>
+        <ul style="margin: 0; padding-left: 18px; font-size: 0.78rem; color: var(--text-main); line-height: 1.5;">
+          <li><strong>Flip to Back-of-Pack (BOP):</strong> Statutory declarations (MRP, Net Qty, Mfg Date) are printed on the back/side panel, not the front brand artwork.</li>
+          <li><strong>Check Lighting & Glare:</strong> Foil or glossy plastic reflections can blind the OCR camera. Angle the package slightly away from direct reflections.</li>
+          <li><strong>Align Inside Box:</strong> Use the live horizon level bar to hold the phone straight and bring the package close enough to fill the viewfinder.</li>
+        </ul>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary" id="btn-invalid-scan-retry" style="flex: 1; min-width: 140px; font-weight: 700;">
+          <span>📸</span>
+          <span>Scan Back-of-Pack</span>
+        </button>
+        <button type="button" class="btn btn-outline" id="btn-invalid-scan-manual" style="flex: 1; min-width: 140px; font-weight: 600;">
+          <span>⌨️</span>
+          <span>Manual Product Entry</span>
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -2130,21 +2200,6 @@
         };
       }
 
-      // Quick Consumer Demo Button (Login Screen & Front Page Hero)
-      const quickConsumerBtn = document.getElementById('btn-quick-consumer-demo');
-      if (quickConsumerBtn) {
-        quickConsumerBtn.onclick = async function() {
-          await MetraScan.Auth.quickConsumerDemo();
-        };
-      }
-      const heroConsumerBtn = document.getElementById('btn-hero-consumer-demo');
-      if (heroConsumerBtn) {
-        heroConsumerBtn.onclick = async function(e) {
-          e.stopPropagation();
-          await MetraScan.Auth.quickConsumerDemo();
-        };
-      }
-
       // Ministry Login Form
       const ministryLoginForm = document.getElementById('ministry-login-form');
       if (ministryLoginForm) {
@@ -2165,22 +2220,39 @@
       const consumerSignupForm = document.getElementById('consumer-signup-form');
       const btnConsumerSendOtp = document.getElementById('btn-consumer-send-otp');
       const btnConsumerVerifyOtp = document.getElementById('btn-consumer-verify-otp');
+      const consumerPhoneInput = document.getElementById('consumer-signup-phone');
+
+      if (consumerPhoneInput) {
+        consumerPhoneInput.addEventListener('blur', async function() {
+          const val = this.value.trim().replace(/\D/g, '').slice(-10);
+          if (val.length >= 10 && MetraScan.API && MetraScan.API.checkPhoneExists) {
+            const exists = await MetraScan.API.checkPhoneExists(val);
+            if (exists) {
+              MetraScan.App.showToast('This mobile number already exists. Please log in.', 'error', 4500);
+            }
+          }
+        });
+      }
 
       if (btnConsumerSendOtp) {
-        btnConsumerSendOtp.onclick = function() {
+        btnConsumerSendOtp.onclick = async function() {
           const phoneInput = document.getElementById('consumer-signup-phone');
           const phone = phoneInput ? phoneInput.value.trim() : '';
           if (!phone) {
             MetraScan.App.showToast('Please enter your mobile phone number first.', 'error');
             return;
           }
-          const code = MetraScan.Auth.sendRegistrationOTP(phone);
+          btnConsumerSendOtp.disabled = true;
+          btnConsumerSendOtp.textContent = 'Checking...';
+          const code = await MetraScan.Auth.sendRegistrationOTP(phone);
+          btnConsumerSendOtp.disabled = false;
+          btnConsumerSendOtp.textContent = 'Send OTP';
           if (code) {
             const box = document.getElementById('consumer-otp-box');
             if (box) box.style.display = 'block';
             const otpInput = document.getElementById('consumer-otp-input');
             if (otpInput) {
-              otpInput.value = '4892';
+              otpInput.value = '';
               otpInput.focus();
             }
           }
@@ -2224,7 +2296,7 @@
           if (!MetraScan.Auth.isPhoneVerified(phone)) {
             pendingSignupData = data;
             pendingSignupType = 'consumer';
-            openOTPVerifyModal(phone);
+            await openOTPVerifyModal(phone);
           } else {
             await MetraScan.Auth.signupAsConsumer(data);
           }
@@ -2235,22 +2307,39 @@
       const ministrySignupForm = document.getElementById('ministry-signup-form');
       const btnMinistrySendOtp = document.getElementById('btn-ministry-send-otp');
       const btnMinistryVerifyOtp = document.getElementById('btn-ministry-verify-otp');
+      const ministryPhoneInput = document.getElementById('ministry-signup-phone');
+
+      if (ministryPhoneInput) {
+        ministryPhoneInput.addEventListener('blur', async function() {
+          const val = this.value.trim().replace(/\D/g, '').slice(-10);
+          if (val.length >= 10 && MetraScan.API && MetraScan.API.checkPhoneExists) {
+            const exists = await MetraScan.API.checkPhoneExists(val);
+            if (exists) {
+              MetraScan.App.showToast('This mobile number already exists. Please log in.', 'error', 4500);
+            }
+          }
+        });
+      }
 
       if (btnMinistrySendOtp) {
-        btnMinistrySendOtp.onclick = function() {
+        btnMinistrySendOtp.onclick = async function() {
           const phoneInput = document.getElementById('ministry-signup-phone');
           const phone = phoneInput ? phoneInput.value.trim() : '';
           if (!phone) {
             MetraScan.App.showToast('Please enter your contact phone number first.', 'error');
             return;
           }
-          const code = MetraScan.Auth.sendRegistrationOTP(phone);
+          btnMinistrySendOtp.disabled = true;
+          btnMinistrySendOtp.textContent = 'Checking...';
+          const code = await MetraScan.Auth.sendRegistrationOTP(phone);
+          btnMinistrySendOtp.disabled = false;
+          btnMinistrySendOtp.textContent = 'Send OTP';
           if (code) {
             const box = document.getElementById('ministry-otp-box');
             if (box) box.style.display = 'block';
             const otpInput = document.getElementById('ministry-otp-input');
             if (otpInput) {
-              otpInput.value = '4892';
+              otpInput.value = '';
               otpInput.focus();
             }
           }
@@ -2297,7 +2386,7 @@
           if (!MetraScan.Auth.isPhoneVerified(phone)) {
             pendingSignupData = data;
             pendingSignupType = 'ministry';
-            openOTPVerifyModal(phone);
+            await openOTPVerifyModal(phone);
           } else {
             await MetraScan.Auth.signupAsMinistry(data);
           }
@@ -2305,22 +2394,29 @@
       }
 
       // Helper to Open & Handle OTP Verification Modal
-      function openOTPVerifyModal(phoneNum) {
+      async function openOTPVerifyModal(phoneNum) {
         const phoneDisplay = document.getElementById('modal-otp-phone-display');
         const otpInput = document.getElementById('modal-otp-input');
-        if (phoneDisplay) phoneDisplay.textContent = phoneNum || '9876543210';
-        if (otpInput) otpInput.value = '4892';
+        if (phoneDisplay) phoneDisplay.textContent = phoneNum || '';
+        if (otpInput) otpInput.value = '';
 
-        MetraScan.Auth.sendRegistrationOTP(phoneNum);
-        MetraScan.App.openModal('modal-otp-verify');
+        const code = await MetraScan.Auth.sendRegistrationOTP(phoneNum);
+        if (code) {
+          MetraScan.App.openModal('modal-otp-verify');
+        }
       }
 
       const btnModalSubmitOtp = document.getElementById('btn-modal-submit-otp');
       if (btnModalSubmitOtp) {
         btnModalSubmitOtp.onclick = async function() {
           const otpInput = document.getElementById('modal-otp-input');
-          const code = otpInput ? otpInput.value.trim() : '4892';
+          const code = otpInput ? otpInput.value.trim() : '';
           const phone = pendingSignupData ? pendingSignupData.phone : '';
+
+          if (!code) {
+            MetraScan.App.showToast('Please enter the 4-digit verification code.', 'error');
+            return;
+          }
 
           if (MetraScan.Auth.verifyRegistrationOTP(phone, code)) {
             MetraScan.App.closeModal('modal-otp-verify');
@@ -2337,9 +2433,11 @@
 
       const btnModalResendOtp = document.getElementById('btn-modal-resend-otp');
       if (btnModalResendOtp) {
-        btnModalResendOtp.onclick = function() {
-          const phone = pendingSignupData ? pendingSignupData.phone : '9876543210';
-          MetraScan.Auth.sendRegistrationOTP(phone);
+        btnModalResendOtp.onclick = async function() {
+          const phone = pendingSignupData ? pendingSignupData.phone : '';
+          if (phone) {
+            await MetraScan.Auth.sendRegistrationOTP(phone);
+          }
         };
       }
 
@@ -2375,14 +2473,61 @@
         }
       }, true); // capture phase so it fires before any onclick can block it
 
-      // Manual Code Entry Modal triggers
-      const enterCodeBtn = document.getElementById('btn-home-enter-code');
+      // Clear all login input values on initial load to prevent browser autofill
+      function clearAllAuthInputs() {
+        ['consumer-phone', 'consumer-password', 'ministry-gov-id', 'ministry-password'].forEach(function(id) {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+      }
+      clearAllAuthInputs();
+      window.addEventListener('load', function() {
+        clearAllAuthInputs();
+        setTimeout(clearAllAuthInputs, 100);
+        setTimeout(clearAllAuthInputs, 350);
+      });
+
+      // Home Scan Ingredients Button & Choice Modal
+      const scanIngredientsBtn = document.getElementById('btn-home-scan-ingredients');
+      const choiceCameraBtn = document.getElementById('btn-choice-camera-ingredients');
+      const choiceUploadBtn = document.getElementById('btn-choice-upload-ingredients');
+      const homeIngFile = document.getElementById('input-home-ingredients-file');
       const scannerManualBtn = document.getElementById('btn-scanner-manual');
-      if (enterCodeBtn) {
-        enterCodeBtn.onclick = function() {
-          MetraScan.App.openModal('modal-manual-code');
+
+      if (scanIngredientsBtn) {
+        scanIngredientsBtn.onclick = function() {
+          MetraScan.App.openModal('modal-scan-ingredients');
         };
       }
+
+      if (choiceCameraBtn) {
+        choiceCameraBtn.onclick = function() {
+          MetraScan.App.closeModal('modal-scan-ingredients');
+          MetraScan.Nav.navigateTo('consumer-scan', { mode: 'ingredients' });
+        };
+      }
+
+      if (choiceUploadBtn && homeIngFile) {
+        choiceUploadBtn.onclick = function() {
+          MetraScan.App.closeModal('modal-scan-ingredients');
+          homeIngFile.click();
+        };
+      }
+
+      if (homeIngFile) {
+        homeIngFile.onchange = function(e) {
+          if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const localUrl = URL.createObjectURL(file);
+            MetraScan.Nav.navigateTo('consumer-scan', { mode: 'ingredients' });
+            if (MetraScan.Consumer && MetraScan.Consumer.processRealScan) {
+              MetraScan.Consumer.processRealScan(file, 'Ingredients Scan (' + file.name + ')', localUrl);
+            }
+            homeIngFile.value = '';
+          }
+        };
+      }
+
       if (scannerManualBtn) {
         scannerManualBtn.onclick = function() {
           MetraScan.App.openModal('modal-manual-code');
@@ -2425,23 +2570,50 @@
           e.preventDefault();
           const codeInput = document.getElementById('manual-barcode-input');
           let code = codeInput ? codeInput.value.trim() : '';
-          if (!code) code = '8901234567890';
-          const targetProd = MetraScan.App.getProductByBarcode(code) || MetraScan.App.state.products[0];
+          if (!code) {
+            MetraScan.App.showToast('Please enter a barcode number or QR code ID.', 'warning');
+            return;
+          }
+          let targetProd = MetraScan.App.getProductByBarcode(code);
+          if (!targetProd) {
+            targetProd = {
+              id: 'prod-' + Date.now(),
+              barcode: code,
+              qrId: 'QR-' + code,
+              name: 'Manual Audit Commodity (' + code + ')',
+              brand: 'Citizen Manual Entry',
+              category: 'Packaged Commodity',
+              image: 'assets/images/product-oil.svg',
+              manufacturer: 'Unspecified Manufacturer',
+              mfgAddress: 'Point of Sale Entry',
+              consumerCare: 'N/A',
+              mrp: 'Manual Record',
+              mrpValue: 0,
+              netQuantity: '1 Standard Unit',
+              unitSalePrice: 'N/A',
+              batchNo: 'N/A',
+              mfgDate: 'N/A',
+              expDate: 'N/A',
+              bestBefore: 'N/A',
+              status: 'review',
+              statusLabel: 'MANUAL ENTRY RECORD',
+              score: 75,
+              verifiedDate: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+              licenceNo: 'Manual Audit',
+              declarations: {},
+              registryStatus: {
+                legalMetrology: 'Direct Citizen Audit',
+                nationalRegistry: 'Manual Entry Under Verification',
+                qrIntegrity: 'Unverified'
+              }
+            };
+            MetraScan.App.addProduct(targetProd);
+          }
           applyManualDeclarationsToProduct(targetProd, 'manual');
           MetraScan.App.closeModal('modal-manual-code');
           MetraScan.Consumer.triggerScanSuccess(targetProd.barcode);
         };
       }
-
-      // Quick Code Chips in Modal
-      const quickCodeBtns = document.querySelectorAll('.btn-quick-code');
-      quickCodeBtns.forEach(function(btn) {
-        btn.onclick = function() {
-          const code = this.getAttribute('data-code');
-          const codeInput = document.getElementById('manual-barcode-input');
-          if (codeInput) codeInput.value = code;
-        };
-      });
 
       // Officer Manual Code Modal Form
       const inspectorManualForm = document.getElementById('form-inspector-manual-code');
@@ -2450,8 +2622,45 @@
           e.preventDefault();
           const codeInput = document.getElementById('inspector-manual-barcode-input');
           let code = codeInput ? codeInput.value.trim() : '';
-          if (!code) code = '8901234567890';
-          const targetProd = MetraScan.App.getProductByBarcode(code) || MetraScan.App.state.products[0];
+          if (!code) {
+            MetraScan.App.showToast('Please enter a barcode number or Package ID.', 'warning');
+            return;
+          }
+          let targetProd = MetraScan.App.getProductByBarcode(code);
+          if (!targetProd) {
+            targetProd = {
+              id: 'prod-' + Date.now(),
+              barcode: code,
+              qrId: 'QR-' + code,
+              name: 'Field Sample Commodity (' + code + ')',
+              brand: 'Field Inspected Brand',
+              category: 'Packaged Commodity',
+              image: 'assets/images/product-oil.svg',
+              manufacturer: 'Field Sample Manufacturer',
+              mfgAddress: 'Retail Inspection Point',
+              consumerCare: 'N/A',
+              mrp: 'Field Verified MRP',
+              mrpValue: 0,
+              netQuantity: '1 Unit',
+              unitSalePrice: 'N/A',
+              batchNo: 'N/A',
+              mfgDate: 'N/A',
+              expDate: 'N/A',
+              bestBefore: 'N/A',
+              status: 'review',
+              statusLabel: 'FIELD INSPECTION SAMPLE',
+              score: 70,
+              verifiedDate: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+              licenceNo: 'Field Sample Audit',
+              declarations: {},
+              registryStatus: {
+                legalMetrology: 'Field Sample Registry',
+                nationalRegistry: 'Enforcement Seizure Memo',
+                qrIntegrity: 'Pending Laboratory Analysis'
+              }
+            };
+            MetraScan.App.addProduct(targetProd);
+          }
           applyManualDeclarationsToProduct(targetProd, 'inspector');
           MetraScan.App.closeModal('modal-inspector-manual');
           if (MetraScan.Ministry && MetraScan.Ministry.triggerInspectorScanSuccess) {
@@ -2459,16 +2668,6 @@
           }
         };
       }
-
-      // Officer Quick Code Chips in Modal
-      const inspectorQuickCodeBtns = document.querySelectorAll('.btn-inspector-quick-code');
-      inspectorQuickCodeBtns.forEach(function(btn) {
-        btn.onclick = function() {
-          const code = this.getAttribute('data-code');
-          const codeInput = document.getElementById('inspector-manual-barcode-input');
-          if (codeInput) codeInput.value = code;
-        };
-      });
 
       // Quick Report Issue Trigger
       const quickReportBtn = document.getElementById('btn-quick-report-issue');
@@ -2551,6 +2750,107 @@
         };
       });
 
+      // ── Server Connection / Mobile Access Modal Wiring ──
+      const serverBtns = document.querySelectorAll('.btn-open-server-modal');
+      const serverUrlInput = document.getElementById('input-server-backend-url');
+      const serverStatusBadge = document.getElementById('server-modal-status-badge');
+      const btnTestServer = document.getElementById('btn-test-server-connection');
+      const btnSaveServer = document.getElementById('btn-save-server-connection');
+      const btnPresetLocal = document.getElementById('btn-preset-local');
+      const btnPresetLan = document.getElementById('btn-preset-lan');
+
+      function updateServerStatusUI(online, url) {
+        serverBtns.forEach(function(btn) {
+          const textEl = btn.querySelector('.server-status-text');
+          if (online) {
+            btn.className = 'btn-server-indicator btn-open-server-modal status-connected';
+            if (textEl) textEl.textContent = 'Server: Online';
+          } else {
+            btn.className = 'btn-server-indicator btn-open-server-modal status-disconnected';
+            if (textEl) textEl.textContent = 'Server: Offline';
+          }
+        });
+        if (serverStatusBadge) {
+          serverStatusBadge.textContent = online ? '🟢 Online (' + (url || 'connected') + ')' : '🔴 Unreachable';
+          serverStatusBadge.style.color = online ? '#10b981' : '#ef4444';
+        }
+      }
+
+      // Initial check
+      if (MetraScan.API && MetraScan.API.checkHealth) {
+        MetraScan.API.checkHealth().then(function(res) {
+          updateServerStatusUI(res && res.online, MetraScan.API.getApiBaseUrl());
+        });
+      }
+
+      serverBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          if (serverUrlInput && MetraScan.API) {
+            serverUrlInput.value = MetraScan.API.getApiBaseUrl();
+          }
+          MetraScan.App.openModal('modal-server-connection');
+        };
+      });
+
+      if (btnPresetLocal && serverUrlInput) {
+        btnPresetLocal.onclick = function() {
+          serverUrlInput.value = 'http://localhost:8000';
+        };
+      }
+
+      if (btnPresetLan && serverUrlInput) {
+        btnPresetLan.onclick = function() {
+          const host = window.location.hostname;
+          serverUrlInput.value = window.location.protocol + '//' + host + ':8000';
+        };
+      }
+
+      if (btnTestServer) {
+        btnTestServer.onclick = async function() {
+          const url = (serverUrlInput ? serverUrlInput.value : '').trim();
+          if (!url) {
+            MetraScan.App.showToast('Please enter a server URL to test', 'warning');
+            return;
+          }
+          btnTestServer.disabled = true;
+          btnTestServer.textContent = 'Testing...';
+          try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 3500);
+            const r = await fetch(url.replace(/\/+$/, '') + '/health', { signal: controller.signal });
+            clearTimeout(tid);
+            if (r.ok) {
+              const data = await r.json();
+              MetraScan.App.showToast('✓ Connected to ' + (data.service || 'MetraScan') + ' (' + (data.version || 'v1') + ')', 'success', 3500);
+              updateServerStatusUI(true, url);
+            } else {
+              MetraScan.App.showToast('Server responded with HTTP ' + r.status, 'warning');
+              updateServerStatusUI(false);
+            }
+          } catch (err) {
+            MetraScan.App.showToast('Failed to reach server: ' + (err.name === 'AbortError' ? 'Timeout' : 'Network Error'), 'error');
+            updateServerStatusUI(false);
+          } finally {
+            btnTestServer.disabled = false;
+            btnTestServer.innerHTML = '<span>🔍</span><span>Test Ping</span>';
+          }
+        };
+      }
+
+      if (btnSaveServer) {
+        btnSaveServer.onclick = function() {
+          const url = (serverUrlInput ? serverUrlInput.value : '').trim();
+          if (MetraScan.API && MetraScan.API.setApiBaseUrl) {
+            MetraScan.API.setApiBaseUrl(url);
+            MetraScan.App.showToast('Backend endpoint saved: ' + (url || 'Default'), 'success');
+            MetraScan.App.closeModal('modal-server-connection');
+            MetraScan.API.checkHealth().then(function(res) {
+              updateServerStatusUI(res && res.online, MetraScan.API.getApiBaseUrl());
+            });
+          }
+        };
+      }
+
       // 3. Check Authentication Session & Navigate Initial View
       const currentUser = MetraScan.Auth.getCurrentUser();
       const userRole = MetraScan.Auth.getUserRole();
@@ -2619,6 +2919,9 @@
             <span>🔄</span>
             <span>Retake Photo</span>
           </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===================================================================
@@ -2641,18 +2944,13 @@
       <div class="modal-body">
         <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
           <p style="margin: 0; font-size: 0.86rem; color: var(--text-main);">
-            We have sent a 4-digit SMS OTP security code to: <strong id="modal-otp-phone-display">9876543210</strong>
+            We have sent a 4-digit SMS OTP security code to: <strong id="modal-otp-phone-display">Your Mobile Number</strong>
           </p>
-        </div>
-
-        <div style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">⚡ SIMULATED SMS NOTIFICATION:</span>
-          <span style="font-size: 0.88rem; font-weight: 800; color: var(--primary); letter-spacing: 2px;">Demo Code: 4892</span>
         </div>
 
         <div class="form-group" style="text-align: center;">
           <label class="form-label" for="modal-otp-input" style="font-weight: 700;">Enter 4-Digit Security Code</label>
-          <input type="text" id="modal-otp-input" class="form-input mono-text" placeholder="4892" maxlength="6" style="max-width: 220px; margin: 0 auto; text-align: center; font-size: 1.5rem; letter-spacing: 6px; font-weight: 800; padding: 10px;">
+          <input type="text" id="modal-otp-input" class="form-input mono-text" placeholder="••••" maxlength="6" style="max-width: 220px; margin: 0 auto; text-align: center; font-size: 1.5rem; letter-spacing: 6px; font-weight: 800; padding: 10px;">
         </div>
 
         <div style="text-align: center; margin-top: 12px;">
@@ -2666,6 +2964,59 @@
         <button class="btn btn-success btn-block" id="btn-modal-submit-otp" style="font-size: 1rem; font-weight: 700; padding: 12px;">
           <span>✓</span>
           <span>Verify OTP & Complete Registration</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       SERVER CONNECTION & MOBILE TUNNEL CONFIGURATION MODAL
+       =================================================================== -->
+  <div class="modal-container" id="modal-server-connection">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-md">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="modal-icon">⚡</span>
+          <div>
+            <h3>Backend Server Connection</h3>
+            <p class="modal-subtitle">Configure the Python OCR & Metrology Engine endpoint</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-modal-close="modal-server-connection" title="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="server-config-info-box">
+          <p style="margin: 0 0 8px 0;"><strong>📱 Mobile Phone Access:</strong> When accessing MetraScan from your phone, enter your public backend URL (e.g. your Cloudflare Tunnel URL or Render backend) so the phone can reach the AI OCR scanner.</p>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            Current Status: <span id="server-modal-status-badge" style="font-weight: 700;">Checking...</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-server-backend-url" style="font-weight: 700;">Backend API Base URL</label>
+          <input type="url" id="input-server-backend-url" class="form-input mono-text" placeholder="http://localhost:8000" style="font-size: 0.92rem; padding: 10px;">
+          <small class="form-hint" style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 4px;">Must be an HTTPS endpoint when scanning on a mobile device.</small>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; display: block;">Quick Presets:</label>
+          <div class="server-config-presets">
+            <button type="button" class="preset-chip-btn" id="btn-preset-local">💻 Localhost (8000)</button>
+            <button type="button" class="preset-chip-btn" id="btn-preset-lan">📶 Current Hostname</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" id="btn-test-server-connection">
+          <span>🔍</span>
+          <span>Test Ping</span>
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-save-server-connection">
+          <span>💾</span>
+          <span>Save &amp; Connect</span>
         </button>
       </div>
     </div>

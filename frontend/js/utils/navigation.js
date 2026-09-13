@@ -130,9 +130,28 @@
   function triggerScreenLifecycle(viewId, params) {
     switch (viewId) {
       case 'consumer-login':
+        const cp = document.getElementById('consumer-phone');
+        const cpw = document.getElementById('consumer-password');
+        if (cp) cp.value = '';
+        if (cpw) cpw.value = '';
+        setTimeout(function() {
+          if (cp) cp.value = '';
+          if (cpw) cpw.value = '';
+        }, 50);
         if (MetraScan.Auth && MetraScan.Auth.initGoogleAuth) {
           MetraScan.Auth.initGoogleAuth();
         }
+        break;
+
+      case 'ministry-login':
+        const mg = document.getElementById('ministry-gov-id');
+        const mpw = document.getElementById('ministry-password');
+        if (mg) mg.value = '';
+        if (mpw) mpw.value = '';
+        setTimeout(function() {
+          if (mg) mg.value = '';
+          if (mpw) mpw.value = '';
+        }, 50);
         break;
 
       case 'consumer-home':
@@ -143,13 +162,13 @@
 
       case 'consumer-scan':
         if (MetraScan.Consumer && MetraScan.Consumer.initScanner) {
-          MetraScan.Consumer.initScanner();
+          MetraScan.Consumer.initScanner(params);
         }
         break;
 
       case 'consumer-verification':
         if (MetraScan.Consumer && MetraScan.Consumer.renderVerification) {
-          MetraScan.Consumer.renderVerification(params.productId || 'prod-001');
+          MetraScan.Consumer.renderVerification(params.productId);
         }
         break;
 
@@ -173,7 +192,7 @@
 
       case 'consumer-report-view':
         if (MetraScan.Consumer && MetraScan.Consumer.renderConsumerReport) {
-          MetraScan.Consumer.renderConsumerReport(params.productId || 'prod-001', params.location);
+          MetraScan.Consumer.renderConsumerReport(params.productId, params.location);
         }
         break;
 
