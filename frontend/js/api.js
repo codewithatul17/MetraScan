@@ -10,7 +10,7 @@
   window.MetraScan = window.MetraScan || {};
 
   // Configurable API base URL (can be overridden via localStorage or config.js)
-  const DEFAULT_API_BASE_URL = 'https://metrascan.onrender.com';
+  const DEFAULT_API_BASE_URL = 'https://metrascan-1.onrender.com';
   let apiBaseUrl = (function() {
     try {
       return localStorage.getItem('metrascan_api_url') || window.METRASCAN_API_URL || DEFAULT_API_BASE_URL;
