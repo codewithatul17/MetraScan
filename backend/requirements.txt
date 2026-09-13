@@ -7,3 +7,4 @@ python-multipart>=0.0.32
 uvicorn[standard]>=0.52.4
 supabase>=2.30.0
 python-dotenv>=1.0.0
+rapidfuzz>=3.0.0

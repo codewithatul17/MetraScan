@@ -21,35 +21,56 @@ logger = logging.getLogger("metra.scan_service")
 
 
 def detect_visual_codes(img: np.ndarray) -> Dict[str, Optional[str]]:
-    """Detects physical 1D barcodes and 2D QR codes directly from the visual camera frame using OpenCV."""
+    """Detects physical 1D barcodes and 2D QR codes directly from visual camera frames using OpenCV."""
     barcode_str = None
     qr_str = None
-    if img is None:
+    if img is None or img.size == 0:
         return {"barcode": None, "qr_code": None}
 
-    try:
-        bd = cv2.barcode.BarcodeDetector()
-        res = bd.detectAndDecode(img)
-        if isinstance(res, tuple) and res:
-            info = res[0]
-            if isinstance(info, (list, tuple)):
-                non_empty = [str(c).strip() for c in info if c]
-                if non_empty:
-                    barcode_str = non_empty[0]
-            elif isinstance(info, str) and info.strip():
-                barcode_str = info.strip()
-    except Exception as e:
-        logger.debug("Visual barcode detection skipped: %s", e)
+    def _try_detect(frame: np.ndarray) -> tuple:
+        b_val, q_val = None, None
+        try:
+            bd = cv2.barcode.BarcodeDetector()
+            res = bd.detectAndDecode(frame)
+            if isinstance(res, tuple) and res:
+                info = res[0]
+                if isinstance(info, (list, tuple)):
+                    non_empty = [str(c).strip() for c in info if c]
+                    if non_empty:
+                        b_val = non_empty[0]
+                elif isinstance(info, str) and info.strip():
+                    b_val = info.strip()
+        except Exception:
+            pass
 
-    try:
-        qd = cv2.QRCodeDetector()
-        res_qr = qd.detectAndDecode(img)
-        if isinstance(res_qr, tuple) and res_qr:
-            text = res_qr[0]
-            if isinstance(text, str) and text.strip():
-                qr_str = text.strip()
-    except Exception as e:
-        logger.debug("Visual QR detection skipped: %s", e)
+        try:
+            qd = cv2.QRCodeDetector()
+            res_qr = qd.detectAndDecode(frame)
+            if isinstance(res_qr, tuple) and res_qr:
+                text = res_qr[0]
+                if isinstance(text, str) and text.strip():
+                    q_val = text.strip()
+        except Exception:
+            pass
+        return b_val, q_val
+
+    # 1. Direct pass
+    barcode_str, qr_str = _try_detect(img)
+
+    # 2. If not detected, test 90-degree and 270-degree rotations (for side-panel/vertical barcodes)
+    if not barcode_str or not qr_str:
+        for rot in (cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE):
+            if barcode_str and qr_str:
+                break
+            try:
+                rotated = cv2.rotate(img, rot)
+                b_rot, q_rot = _try_detect(rotated)
+                if not barcode_str and b_rot:
+                    barcode_str = b_rot
+                if not qr_str and q_rot:
+                    qr_str = q_rot
+            except Exception:
+                pass
 
     return {"barcode": barcode_str, "qr_code": qr_str}
 

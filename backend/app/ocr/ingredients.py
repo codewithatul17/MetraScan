@@ -359,51 +359,61 @@ UPF_MARKERS = [
 ALLERGEN_PATTERNS = [
     {
         "pattern": r"\b(?:wheat|maida|atta|gluten|semolina|suji|barley|rye|spelt)\b",
+        "fuzzy_keywords": ["wheat", "maida", "atta", "gluten", "semolina", "suji", "barley", "spelt"],
         "name": "Gluten (Wheat)",
         "icon": "🌾"
     },
     {
         "pattern": r"\b(?:milk|dairy|milk\s+solids?|whey|casein|caseinate|lactose|butter|ghee|cheese|cream|curd|paneer)\b",
+        "fuzzy_keywords": ["milk", "dairy", "whey", "casein", "caseinate", "lactose", "butter", "cheese", "cream", "paneer"],
         "name": "Milk / Dairy Solids",
         "icon": "🥛"
     },
     {
         "pattern": r"\b(?:soy|soya|soybean|soy\s+lecithin)\b",
+        "fuzzy_keywords": ["soya", "soybean", "lecithin", "soylecithin"],
         "name": "Soy / Soybean",
         "icon": "🌱"
     },
     {
         "pattern": r"\b(?:peanut|peanuts|groundnut|groundnuts)\b",
+        "fuzzy_keywords": ["peanut", "peanuts", "groundnut", "groundnuts"],
         "name": "Peanuts / Groundnuts",
         "icon": "🥜"
     },
     {
         "pattern": r"\b(?:almond|cashew|walnut|pistachio|hazelnut|tree\s+nuts?|badam|kaju)\b",
+        "fuzzy_keywords": ["almond", "almonds", "cashew", "cashews", "walnut", "walnuts", "pistachio", "hazelnut", "badam", "kaju"],
         "name": "Tree Nuts",
         "icon": "🌰"
     },
     {
         "pattern": r"\b(?:egg|eggs|albumin|egg\s+white|egg\s+yolk)\b",
+        "fuzzy_keywords": ["albumin", "albumen", "eggwhite", "eggyolk"],
         "name": "Egg / Albumen",
         "icon": "🥚"
     },
     {
         "pattern": r"\b(?:fish|crustacean|prawn|shrimp|crab|shellfish)\b",
+        "fuzzy_keywords": ["crustacean", "shellfish", "prawn", "shrimp"],
         "name": "Fish / Shellfish",
         "icon": "🐟"
     },
     {
         "pattern": r"\b(?:sulphite|sulfite|sulphur\s+dioxide|metabisulphite)\b",
+        "fuzzy_keywords": ["sulphite", "sulfite", "metabisulphite"],
         "name": "Sulphites (>10ppm)",
         "icon": "⚠️"
     },
     {
         "pattern": r"\b(?:sesame|til)\b",
+        "fuzzy_keywords": ["sesame"],
         "name": "Sesame Seeds",
         "icon": "✨"
     },
     {
         "pattern": r"\b(?:mustard|sarson)\b",
+        "fuzzy_keywords": ["mustard", "sarson"],
         "name": "Mustard",
         "icon": "🌿"
     }
@@ -433,6 +443,15 @@ def extract_ingredients_text(ocr_boxes: List[Dict[str, Any]]) -> Optional[str]:
     if not ocr_boxes:
         return None
 
+    # Sort boxes spatially in natural top-to-bottom reading order with row grouping
+    sorted_boxes = sorted(
+        ocr_boxes,
+        key=lambda b: (
+            round((b.get("box", [0, 0, 0, 0])[1]) / 25.0) * 25.0,
+            b.get("box", [0, 0, 0, 0])[0]
+        )
+    )
+
     # Step 1: Find lines with ingredients trigger keywords
     ingredient_header_pattern = re.compile(
         r"\b(?:ingredients?|key\s+ingredients?|active\s+ingredients?|contains|सामग्री|घटक)\b",
@@ -440,14 +459,15 @@ def extract_ingredients_text(ocr_boxes: List[Dict[str, Any]]) -> Optional[str]:
     )
 
     stop_header_pattern = re.compile(
-        r"\b(?:nutritional\s+info|nutrition\s+facts|mfg\s+by|manufactured\s+by|packed\s+by|"
-        r"batch\s+no|mrp\b|best\s+before|consumer\s+care|customer\s+care|toll\s+free|"
-        r"fssai\b|storage\s+instructions?|marketed\s+by|regd\s+office)\b",
+        r"\b(?:nutritional\s+(?:information|info|values?)|nutrition\s+(?:facts?|information|info)|"
+        r"mfg\s+by|mfd\s+by|manufactured\s+by|packed\s+by|batch\s+no|b\.?\s*no|mrp\b|best\s+before|use\s+by|"
+        r"consumer\s+care|customer\s+care|toll\s+free|fssai\b|storage\s+instructions?|marketed\s+by|"
+        r"regd\s+office|feedback)\b",
         re.IGNORECASE
     )
 
     start_idx = -1
-    for idx, box in enumerate(ocr_boxes):
+    for idx, box in enumerate(sorted_boxes):
         text = box.get("text", "").strip()
         if ingredient_header_pattern.search(text):
             start_idx = idx
@@ -455,7 +475,7 @@ def extract_ingredients_text(ocr_boxes: List[Dict[str, Any]]) -> Optional[str]:
 
     # If no explicit header found, look for lines containing explicit additive / INS codes
     if start_idx == -1:
-        for idx, box in enumerate(ocr_boxes):
+        for idx, box in enumerate(sorted_boxes):
             text = box.get("text", "")
             if re.search(r"\bINS\s*\d{3,4}\b|\bE\s*\d{3,4}\b|Leavening\s+Agent|Emulsifier\b|Acidity\s+Regulator", text, re.IGNORECASE):
                 start_idx = idx
@@ -468,14 +488,14 @@ def extract_ingredients_text(ocr_boxes: List[Dict[str, Any]]) -> Optional[str]:
     collected_lines = []
     max_lines = 10
 
-    for i in range(start_idx, min(len(ocr_boxes), start_idx + max_lines)):
-        line_text = ocr_boxes[i].get("text", "").strip()
+    for i in range(start_idx, min(len(sorted_boxes), start_idx + max_lines)):
+        line_text = sorted_boxes[i].get("text", "").strip()
         if not line_text:
             continue
 
         # Check if a non-ingredient block starts after the first line
         if i > start_idx and stop_header_pattern.search(line_text):
-            if re.search(r"\ballergen\b|\bcontains\b", line_text, re.IGNORECASE):
+            if re.search(r"\ballergen\b", line_text, re.IGNORECASE):
                 collected_lines.append(line_text)
             break
 
@@ -495,6 +515,53 @@ def extract_ingredients_text(ocr_boxes: List[Dict[str, Any]]) -> Optional[str]:
     ).strip()
 
     return full_text_cleaned if full_text_cleaned else full_text
+
+
+def _levenshtein(s1: str, s2: str) -> int:
+    """Computes minimum single-character edit distance (insertions, deletions, substitutions)."""
+    try:
+        from rapidfuzz.distance import Levenshtein as _rf_lev
+        return int(_rf_lev.distance(s1, s2))
+    except Exception:
+        pass
+
+    if len(s1) < len(s2):
+        return _levenshtein(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    prev_row = list(range(len(s2) + 1))
+    for i, c1 in enumerate(s1):
+        curr_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = prev_row[j + 1] + 1
+            deletions = curr_row[j] + 1
+            substitutions = prev_row[j] + (c1 != c2)
+            curr_row.append(min(insertions, deletions, substitutions))
+        prev_row = curr_row
+    return prev_row[-1]
+
+
+def is_fuzzy_match(word: str, target: str, min_ratio: float = 0.80) -> bool:
+    """
+    Fuzzy Levenshtein matching for OCR character glitches on foil/curved packaging
+    (e.g., 'whcat' -> 'wheat', 'soya lccithin' -> 'soya lecithin', 'pcanuts' -> 'peanuts').
+    """
+    w, t = word.lower(), target.lower()
+    if w == t:
+        return True
+    len_diff = abs(len(w) - len(t))
+    if len_diff > 2:
+        return False
+    max_len = max(len(w), len(t))
+    if max_len < 4:
+        return False
+    dist = _levenshtein(w, t)
+    sim = 1.0 - (float(dist) / float(max_len))
+    # For short words (4-5 chars, e.g. wheat), allow max 1 edit
+    if max_len <= 5:
+        return dist <= 1 and sim >= min_ratio
+    # For words 6+ chars (e.g. peanuts, lecithin, cashew), allow max 2 edits
+    return dist <= 2 and sim >= min_ratio
 
 
 def parse_and_score_ingredients(ingredients_text: Optional[str]) -> Dict[str, Any]:
@@ -600,17 +667,44 @@ def parse_and_score_ingredients(ingredients_text: Optional[str]) -> Dict[str, An
                     "reason": item["reason"]
                 })
 
-    # 3. Detect Allergens
+    # 3. Detect Allergens (Exact Regex + Fuzzy OCR Glitch Tolerance)
     detected_allergens = []
     seen_allergens = set()
+
+    # Extract word tokens from ingredient text for fuzzy matching
+    clean_tokens = [w.lower() for w in re.findall(r"\b[A-Za-z0-9]{4,}\b", text_to_analyze)]
+
     for item in ALLERGEN_PATTERNS:
-        if re.search(item["pattern"], text_to_analyze, re.IGNORECASE):
-            if item["name"] not in seen_allergens:
-                seen_allergens.add(item["name"])
-                detected_allergens.append({
-                    "name": item["name"],
-                    "icon": item["icon"]
-                })
+        matched = False
+        matched_term = None
+
+        # Pass 1: Direct fast regex match
+        m_exact = re.search(item["pattern"], text_to_analyze, re.IGNORECASE)
+        if m_exact:
+            matched = True
+            matched_term = m_exact.group(0)
+
+        # Pass 2: Fuzzy Levenshtein match for wrinkled/curved foil packaging OCR glitches
+        if not matched:
+            fuzzy_kws = item.get("fuzzy_keywords", [])
+            for token in clean_tokens:
+                for target_kw in fuzzy_kws:
+                    if is_fuzzy_match(token, target_kw, min_ratio=0.80):
+                        matched = True
+                        matched_term = f"{token} (~{target_kw})"
+                        break
+                if matched:
+                    break
+
+        if matched and item["name"] not in seen_allergens:
+            seen_allergens.add(item["name"])
+            entry = {
+                "name": item["name"],
+                "icon": item["icon"]
+            }
+            if matched_term:
+                entry["detected_as"] = matched_term
+            detected_allergens.append(entry)
 
     # 4. Detect Clean / Wholesome Ingredients
     detected_clean = []

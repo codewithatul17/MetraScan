@@ -22,83 +22,136 @@ with open(RULES_PATH, "r") as f:
 RULES = _RULES_FILE["declarations"]
 
 
-def _find_matching_box(ocr_boxes, keywords, pattern, allow_pattern_only_fallback=True):
-    """
-    Returns (box, format_valid) for the best match of this declaration in ocr_boxes,
-    or (None, False) if nothing matched.
+def _clean_field_value(field: str, text: str, pattern: str) -> Optional[str]:
+    """Extracts the precise semantic value for a declaration from OCR text."""
+    if not text:
+        return None
+    t = text.strip()
+    if field == "mrp":
+        # Extract pure numeric price avoiding trailing batch numbers or phone numbers
+        m = re.search(r'(?:(?:rs\.?|₹|inr)\s*)?([0-9]+(?:\.[0-9]{1,2})?)', t, re.IGNORECASE)
+        if m:
+            return m.group(1)
+    elif field == "net_quantity":
+        m = re.search(r'(\d+(?:\.\d+)?\s*(?:kg|kgs|kilogram|g|gm|gms|gram|l|ltr|liter|litre|ml|mls|n|u|units?|pcs?|pieces?|tablets?|capsules?))\b', t, re.IGNORECASE)
+        if m:
+            return m.group(1)
+    elif field == "mfg_date":
+        m = re.search(r'\b(?:\d{1,2}[/.-])?\d{1,2}[/.-]\d{2,4}\b|\b(?:\d{1,2}[\s/-])?(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s/-]+(?:20)?\d{2}\b', t, re.IGNORECASE)
+        if m:
+            return m.group(0)
+    elif field == "country_of_origin":
+        m = re.search(r'(?:country\s+of\s+origin|made\s+in|product\s+of|origin)[\s.:]+([A-Za-z\s]+)', t, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+        if re.search(r'\bindia\b|\bbharat\b', t, re.IGNORECASE):
+            return "India"
+    return t
 
-    Strategy (cheapest -> most forgiving, in order):
-      1. A single box contains BOTH a keyword and a value matching the pattern
-         (e.g. "MRP ₹45.00" in one OCR line) — most common case on real labels.
-      2. A box contains just the keyword (the label), and another box roughly on the
-         same row matches the pattern (label and value got OCR'd as separate lines) —
-         handles split label/value layouts.
-      3. No keyword found at all, but SOME box matches the pattern outright — last
-         resort, catches cases where OCR garbled the label text. SKIPPED for fields
-         with loose/free-text patterns (manufacturer, consumer_care) since it causes
-         false positives — any text 3+ chars long "matches" an unrelated field.
+
+def _find_matching_box(ocr_boxes, keywords, pattern, field="", allow_pattern_only_fallback=True):
+    """
+    Returns (box, format_valid, clean_value) for the best match of this declaration in ocr_boxes,
+    or (None, False, None) if nothing matched.
+
+    Strategy (multi-candidate, spatial layout aware):
+      1. Single box contains BOTH a keyword and a value matching pattern.
+      2. Keyword in box A, value in adjacent same-row or stacked (directly below) box B.
+         For manufacturer, concatenates multi-line address rows below the label.
+      3. Pattern-only fallback for unambiguous patterns (mrp, net_quantity, mfg_date).
     """
     keywords_lower = [k.lower() for k in keywords]
 
-    # Pass 1: same box has both keyword and valid value
+    # Pass 1: single box has both keyword and valid value
     for box in ocr_boxes:
-        text_lower = box["text"].lower()
-        if any(kw in text_lower for kw in keywords_lower) and re.search(pattern, box["text"], re.IGNORECASE):
-            return box, True
+        text_lower = box.get("text", "").lower()
+        if any(kw in text_lower for kw in keywords_lower) and re.search(pattern, box.get("text", ""), re.IGNORECASE):
+            clean_val = _clean_field_value(field, box.get("text", ""), pattern)
+            return box, True, clean_val
 
-    # Pass 2: keyword found in one box, look for a value in a nearby box (same row).
-    # Collect ALL same-row candidates and pick the closest one — picking the first
-    # match in ocr_boxes list order (as before) meant an unrelated line above/below
-    # the keyword (e.g. a batch-number line sitting just as "same row") could win
-    # over the actual value line purely by being earlier in OCR output order.
-    keyword_box = None
+    # Pass 2: Search ALL candidate keyword boxes and evaluate nearby value candidates
+    # Supports both side-by-side (same row) AND stacked (value directly underneath label)
+    candidate_keyword_boxes = []
     for box in ocr_boxes:
-        text_lower = box["text"].lower()
+        text_lower = box.get("text", "").lower()
         if any(kw in text_lower for kw in keywords_lower):
-            keyword_box = box
-            break
+            candidate_keyword_boxes.append(box)
 
-    if keyword_box:
-        kx, ky, kw_, kh = keyword_box["box"]
-        candidates = []
-        for box in ocr_boxes:
-            if box is keyword_box:
+    best_match = None
+    best_dist = float("inf")
+
+    for k_box in candidate_keyword_boxes:
+        kx, ky, kw_, kh = k_box.get("box", [0, 0, 0, 0])
+        k_center_y = ky + kh / 2.0
+        k_center_x = kx + kw_ / 2.0
+
+        # Special handling for manufacturer multi-line address:
+        if field == "manufacturer":
+            # Collect lines directly below the keyword within 3.5 line heights
+            addr_lines = [k_box.get("text", "")]
+            for other in ocr_boxes:
+                if other is k_box:
+                    continue
+                bx, by, bw, bh = other.get("box", [0, 0, 0, 0])
+                b_center_y = by + bh / 2.0
+                if 0 < (b_center_y - k_center_y) < (kh * 3.5) and abs(bx - kx) < (kw_ * 1.5):
+                    ot = other.get("text", "").strip()
+                    if ot and not re.search(r'\b(?:mrp|net\s*wt|batch|exp)\b', ot, re.IGNORECASE):
+                        addr_lines.append(ot)
+            if len(addr_lines) > 1:
+                combined_addr = " ".join(addr_lines)
+                synthetic_box = {
+                    "text": combined_addr,
+                    "box": k_box.get("box"),
+                    "conf": k_box.get("conf", 0.9)
+                }
+                return synthetic_box, True, combined_addr
+
+        for other in ocr_boxes:
+            if other is k_box:
                 continue
-            bx, by, bw, bh = box["box"]
-            # Tighter same-row check: vertical centers must be within half the
-            # (average) line height of each other, not a whole line height —
-            # the old `max(kh, bh)` threshold was loose enough to also match
-            # the line directly above or below on tightly-packed labels.
-            avg_h = (kh + bh) / 2
-            k_center_y = ky + kh / 2
-            b_center_y = by + bh / 2
-            same_row = abs(b_center_y - k_center_y) < (avg_h * 0.6)
-            if same_row and re.search(pattern, box["text"], re.IGNORECASE):
+            bx, by, bw, bh = other.get("box", [0, 0, 0, 0])
+            b_center_y = by + bh / 2.0
+            b_center_x = bx + bw / 2.0
+            avg_h = (kh + bh) / 2.0 or 1.0
+
+            # Proximity Case A: Same horizontal row (within 0.8 line height)
+            same_row = abs(b_center_y - k_center_y) < (avg_h * 0.8)
+            # Proximity Case B: Stacked layout (value directly beneath label within 2.8 line heights)
+            stacked = (0 < (b_center_y - k_center_y) < (avg_h * 2.8)) and (abs(b_center_x - k_center_x) < max(kw_, bw) * 1.5)
+
+            if (same_row or stacked) and re.search(pattern, other.get("text", ""), re.IGNORECASE):
                 v_dist = abs(b_center_y - k_center_y)
-                h_dist = abs(bx - (kx + kw_))  # distance from end of keyword box
-                candidates.append((v_dist, h_dist, box))
+                h_dist = abs(bx - (kx + kw_)) if same_row else abs(b_center_x - k_center_x)
+                dist = (v_dist * 2.0 + h_dist) if same_row else (v_dist + h_dist * 0.5)
 
-        if candidates:
-            # Best candidate: closest vertically first, then closest horizontally
-            # (a value box usually sits right after or just below its label).
-            candidates.sort(key=lambda c: (c[0], c[1]))
-            return candidates[0][2], True
+                if dist < best_dist:
+                    best_dist = dist
+                    best_match = other
 
-        # keyword exists but no valid value found nearby -> found, but not format_valid
-        return keyword_box, False
+    if best_match:
+        clean_val = _clean_field_value(field, best_match.get("text", ""), pattern)
+        return best_match, True, clean_val
 
-    # Pass 3: no keyword anywhere, try pattern-only as a last resort
+    # If keyword box exists but no valid value was found nearby
+    if candidate_keyword_boxes:
+        fallback_kbox = candidate_keyword_boxes[0]
+        return fallback_kbox, False, fallback_kbox.get("text")
+
+    # Pass 3: Pattern-only fallback for unambiguous declarations
     if allow_pattern_only_fallback:
         for box in ocr_boxes:
-            if re.search(pattern, box["text"], re.IGNORECASE):
-                return box, True
+            t = box.get("text", "")
+            if re.search(pattern, t, re.IGNORECASE):
+                clean_val = _clean_field_value(field, t, pattern)
+                return box, True, clean_val
 
-    return None, False
+    return None, False, None
 
 
 # Fields whose regex pattern is loose/free-text and must NOT be matched without
 # their keyword also being present (otherwise any unrelated text "matches").
-STRICT_KEYWORD_REQUIRED = {"manufacturer", "consumer_care", "mrp"}
+STRICT_KEYWORD_REQUIRED = {"manufacturer", "consumer_care"}
 
 
 def extract_package_details(ocr_boxes: list) -> dict:
@@ -109,12 +162,14 @@ def extract_package_details(ocr_boxes: list) -> dict:
     - unit_sale_price: Unit sale price (Rule 6(1)(e)) e.g. Rs.1.00/g
     - fssai_licence: 14-digit statutory FSSAI licence number
     - barcode: Numeric barcode / EAN-13 string detected in OCR
+    - country_of_origin: Country of origin (Rule 6(1)(n))
     """
     batch_no = None
     expiry_date = None
     unit_sale_price = None
     fssai_licence = None
     barcode = None
+    country_of_origin = None
 
     sorted_boxes = sorted(ocr_boxes, key=lambda b: (b.get("box", [0, 0, 0, 0])[1], b.get("box", [0, 0, 0, 0])[0]))
 
@@ -126,9 +181,15 @@ def extract_package_details(ocr_boxes: list) -> dict:
 
         # 1. Statutory FSSAI License Number (14 digits)
         if not fssai_licence:
-            m_fssai = re.search(r'(?:fssai|lic(?:\.|ense)?\s*(?:no\.?)?)[\s.:]*([0-9]{14})', t, re.IGNORECASE)
+            m_fssai = re.search(r'(?:fssai|lic(?:\.|ense)?\s*(?:no\.?)?)[\s.:]*([0-9\s-]{14,20})', t, re.IGNORECASE)
             if m_fssai:
-                fssai_licence = m_fssai.group(1)
+                cleaned_fssai = re.sub(r'\D', '', m_fssai.group(1))
+                if len(cleaned_fssai) == 14:
+                    fssai_licence = cleaned_fssai
+            elif re.search(r'\b(1\d{13})\b', t):
+                m_direct = re.search(r'\b(1\d{13})\b', t)
+                if m_direct:
+                    fssai_licence = m_direct.group(1)
 
         # 2. Barcode / GTIN / EAN-13
         if not barcode:
@@ -154,19 +215,18 @@ def extract_package_details(ocr_boxes: list) -> dict:
             if m_usp:
                 unit_sale_price = m_usp.group(1).strip()
             elif re.search(r'\bunit\s*sale\s*price\b', t_lower):
-                # Look in same-row / adjacent boxes
                 b_y = b.get("box", [0, 0, 0, 0])[1] + b.get("box", [0, 0, 0, 0])[3] / 2
                 for other in sorted_boxes:
                     if other is b:
                         continue
                     o_y = other.get("box", [0, 0, 0, 0])[1] + other.get("box", [0, 0, 0, 0])[3] / 2
                     if abs(o_y - b_y) < 45:
-                        m_other = re.search(r'(?:rs\.?|inr|₹)?\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece))\b', other.get("text", ""), re.IGNORECASE)
+                        m_other = re.search(r'(?:rs\.?|inr|₹)?\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece|n|u))\b', other.get("text", ""), re.IGNORECASE)
                         if m_other:
                             unit_sale_price = m_other.group(0).strip()
                             break
             else:
-                m_bare_usp = re.search(r'(?:rs\.?|inr|₹)\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece))\b', t, re.IGNORECASE)
+                m_bare_usp = re.search(r'(?:rs\.?|inr|₹)\s*([0-9.]+\s*(?:\/|\s*per\s*)(?:g|gm|kg|ml|l|unit|pc|piece|n|u))\b', t, re.IGNORECASE)
                 if m_bare_usp and not re.search(r'\bmrp\b', t, re.IGNORECASE):
                     unit_sale_price = m_bare_usp.group(0).strip()
 
@@ -179,7 +239,6 @@ def extract_package_details(ocr_boxes: list) -> dict:
             if m_batch:
                 batch_no = m_batch.group(1).strip()
             elif re.search(r'\b(?:batch(?:\s*no\.?)?|lot(?:\s*no\.?)?)\b', t_lower):
-                # Search nearby box
                 b_y = b.get("box", [0, 0, 0, 0])[1] + b.get("box", [0, 0, 0, 0])[3] / 2
                 for other in sorted_boxes:
                     if other is b:
@@ -206,10 +265,18 @@ def extract_package_details(ocr_boxes: list) -> dict:
                         continue
                     o_y = other.get("box", [0, 0, 0, 0])[1] + other.get("box", [0, 0, 0, 0])[3] / 2
                     if abs(o_y - b_y) < 55:
-                        m_date = re.search(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b\d{1,2}\s+(?:months?|days?|years?)\b', other.get("text", ""), re.IGNORECASE)
+                        m_date = re.search(r'\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b|\b\d{1,2}\s+(?:months?|days?|years?)\b|\b\d{1,2}[/.-]\d{2,4}\b', other.get("text", ""), re.IGNORECASE)
                         if m_date:
                             expiry_date = m_date.group(0).strip()
                             break
+
+        # 6. Country of Origin (Rule 6(1)(n))
+        if not country_of_origin:
+            m_orig = re.search(r'(?:country\s+of\s+origin|made\s+in|product\s+of)[\s.:]+([A-Za-z\s]+)', t, re.IGNORECASE)
+            if m_orig:
+                country_of_origin = m_orig.group(1).strip()
+            elif re.search(r'\b(?:made\s+in\s+india|product\s+of\s+india)\b', t, re.IGNORECASE):
+                country_of_origin = "India"
 
     # Avoid barcode colliding with FSSAI
     if barcode and fssai_licence and barcode == fssai_licence:
@@ -221,6 +288,7 @@ def extract_package_details(ocr_boxes: list) -> dict:
         "unit_sale_price": {"found": unit_sale_price is not None, "format_valid": unit_sale_price is not None, "text": unit_sale_price, "box": None},
         "fssai_licence": {"found": fssai_licence is not None, "format_valid": fssai_licence is not None, "text": fssai_licence, "box": None},
         "barcode": {"found": barcode is not None, "format_valid": barcode is not None, "text": barcode, "box": None},
+        "country_of_origin": {"found": country_of_origin is not None, "format_valid": country_of_origin is not None, "text": country_of_origin, "box": None}
     }
 
 
@@ -234,23 +302,28 @@ def match_declarations(ocr_boxes: list) -> dict:
                 "format_valid": None,
                 "box": None,
                 "text": None,
+                "clean_value": None,
                 "note": rule.get("note", "not auto-checkable"),
             }
             continue
         allow_fallback = field not in STRICT_KEYWORD_REQUIRED
-        box, format_valid = _find_matching_box(
-            ocr_boxes, rule["keywords"], rule["pattern"], allow_pattern_only_fallback=allow_fallback
+        box, format_valid, clean_val = _find_matching_box(
+            ocr_boxes, rule["keywords"], rule["pattern"], field=field, allow_pattern_only_fallback=allow_fallback
         )
         result[field] = {
             "found": box is not None,
             "format_valid": format_valid,
             "box": box["box"] if box else None,
             "text": box["text"] if box else None,
+            "clean_value": clean_val
         }
 
-    # Extract additional packaging details (batch, expiry, USP, FSSAI, barcode)
+    # Extract additional packaging details (batch, expiry, USP, FSSAI, barcode, origin)
     extra_details = extract_package_details(ocr_boxes)
-    result.update(extra_details)
+    for k, v in extra_details.items():
+        # Keep extra detail if not already found with format_valid
+        if k not in result or not result[k].get("found"):
+            result[k] = v
 
     return result
 

@@ -13,7 +13,14 @@
   const DEFAULT_API_BASE_URL = 'https://metrascan-1.onrender.com';
   let apiBaseUrl = (function() {
     try {
-      return localStorage.getItem('metrascan_api_url') || window.METRASCAN_API_URL || DEFAULT_API_BASE_URL;
+      const stored = localStorage.getItem('metrascan_api_url');
+      const isRemoteHost = window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      // If client is accessed on a mobile phone or cloud host, discard stale localhost URLs
+      if (stored && isRemoteHost && (stored.includes('localhost') || stored.includes('127.0.0.1'))) {
+        try { localStorage.removeItem('metrascan_api_url'); } catch (e) {}
+        return DEFAULT_API_BASE_URL;
+      }
+      return stored || window.METRASCAN_API_URL || DEFAULT_API_BASE_URL;
     } catch (e) {
       return DEFAULT_API_BASE_URL;
     }
@@ -51,7 +58,7 @@
    */
   async function checkHealth() {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
       const resp = await fetch(`${apiBaseUrl}/health`, {
@@ -122,13 +129,38 @@
       }
     }
 
+    // Helper for fetch with timeout (allows 55s for Render free tier cold start)
+    const doScanFetch = async (targetUrl) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 55000);
+      try {
+        const resp = await fetch(`${targetUrl}/scan`, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return resp;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
+    };
+
     try {
-      // NOTE: Do NOT set Content-Type header manually when sending FormData;
-      // the browser will automatically compute the multipart boundary.
-      const resp = await fetch(`${apiBaseUrl}/scan`, {
-        method: 'POST',
-        body: formData
-      });
+      let resp;
+      try {
+        resp = await doScanFetch(apiBaseUrl);
+      } catch (firstErr) {
+        // If first attempt failed on localhost, automatically fallback to live Render backend
+        if (apiBaseUrl.includes('localhost') || apiBaseUrl.includes('127.0.0.1')) {
+          console.warn('Localhost scan failed, falling back to Render live backend...');
+          setApiBaseUrl(DEFAULT_API_BASE_URL);
+          resp = await doScanFetch(DEFAULT_API_BASE_URL);
+        } else {
+          throw firstErr;
+        }
+      }
 
       if (!resp.ok) {
         let errorDetail = `${resp.status} ${resp.statusText}`;
@@ -144,9 +176,13 @@
       const result = await resp.json();
       return { ok: true, data: result };
     } catch (err) {
+      const isTimeout = err.name === 'AbortError';
+      const msg = isTimeout
+        ? 'AI Cloud backend took too long to respond (server may be waking up from sleep). Please tap Scan again.'
+        : `Unable to connect to AI backend at ${apiBaseUrl} (${err.message}).`;
       return {
         ok: false,
-        error: `Unable to connect to AI backend at ${apiBaseUrl}. Is the FastAPI server running? (${err.message})`
+        error: msg
       };
     }
   }
@@ -213,12 +249,17 @@
     };
 
     // Determine honest values directly from OCR results
-    const mrpText = mrpData.text ? ('₹' + mrpData.text.replace(/[^0-9.]/g, '') + ' (Incl. of all taxes)') : 'Not detected on label';
-    const mrpValue = mrpData.text ? parseFloat(mrpData.text.replace(/[^0-9.]/g, '')) || 0 : 0;
-    const netQtyText = netQtyData.text || 'Not detected on label';
-    const mfgDateText = mfgDateData.text || 'Not detected on label';
-    const mfrText = mfrData.text || 'Not detected on label';
-    const careText = careData.text || 'Not detected on label';
+    let cleanMrpNum = mrpData.clean_value || null;
+    if (!cleanMrpNum && mrpData.text) {
+      const match = mrpData.text.match(/(?:(?:rs\.?|₹|inr)\s*)?([0-9]+(?:\.[0-9]{1,2})?)/i);
+      cleanMrpNum = match ? match[1] : mrpData.text.replace(/[^0-9.]/g, '');
+    }
+    const mrpText = cleanMrpNum ? ('₹' + cleanMrpNum + ' (Incl. of all taxes)') : (mrpData.text || 'Not detected on label');
+    const mrpValue = cleanMrpNum ? parseFloat(cleanMrpNum) || 0 : 0;
+    const netQtyText = netQtyData.clean_value || netQtyData.text || 'Not detected on label';
+    const mfgDateText = mfgDateData.clean_value || mfgDateData.text || 'Not detected on label';
+    const mfrText = mfrData.clean_value || mfrData.text || 'Not detected on label';
+    const careText = careData.clean_value || careData.text || 'Not detected on label';
 
     // Barcode: strictly genuine or Not detected
     const barcodeVal = (barcodeData.found && barcodeData.text) ? barcodeData.text : 'Not detected on scanned package';
@@ -238,10 +279,14 @@
     // FSSAI Statutory License: strictly genuine or Not detected
     const fssaiVal = (fssaiData.found && fssaiData.text) ? ('FSSAI Lic. No. ' + fssaiData.text) : 'FSSAI not detected on scanned surface';
 
+    // Country of Origin (Rule 6(1)(n))
+    const originData = verdict.country_of_origin || {};
+    const originVal = (originData.found && (originData.clean_value || originData.text)) ? (originData.clean_value || originData.text) : 'India';
+
     // Clean Brand Name Extraction from manufacturer line
     let brandName = 'Brand not detected on label';
     if (mfrData.found && mfrText && mfrText !== 'Not detected on label') {
-      let cleaned = mfrText.replace(/^(?:manufactured|marketed|mfg|packed|imported)\s*(?:by|at)?[\s.:]*/i, '').trim();
+      let cleaned = mfrText.replace(/^(?:manufactured|marketed|mfg|mfd|packed|imported)\s*(?:by|at)?[\s.:]*/i, '').trim();
       const sepIdx = cleaned.search(/[,;\/\n]/);
       if (sepIdx > 0) {
         cleaned = cleaned.substring(0, sepIdx).trim();
@@ -268,7 +313,7 @@
       batchAndMfg: {
         status: (mfgDateData.found && mfgDateData.format_valid) ? 'pass' : (mfgDateData.found ? 'review' : 'violation'),
         label: 'Batch/Lot No. & Mfg Date (Rule 6(1)(d))',
-        value: (batchVal !== 'Not detected on package' ? (`Batch: ${batchVal} · `) : '') + (mfgDateData.found ? mfgDateData.text : 'Mfg date not detected on label')
+        value: (batchVal !== 'Not detected on package' ? (`Batch: ${batchVal} · `) : '') + (mfgDateData.found ? (mfgDateData.clean_value || mfgDateData.text) : 'Mfg date not detected on label')
       },
       bestBefore: {
         status: expData.found ? 'pass' : 'review',
@@ -283,7 +328,7 @@
       netQuantity: {
         status: netQtyData.found && netQtyData.format_valid ? 'pass' : (netQtyData.found ? 'review' : 'violation'),
         label: 'Net Quantity in Standard Units (Rule 6(1)(c) & Rule 12)',
-        value: netQtyData.found ? (netQtyData.text + (netQtyData.format_valid ? ' (SI Unit Valid)' : ' (Invalid SI Unit)')) : 'Net quantity declaration missing'
+        value: netQtyData.found ? ((netQtyData.clean_value || netQtyData.text) + (netQtyData.format_valid ? ' (SI Unit Valid)' : ' (Invalid SI Unit)')) : 'Net quantity declaration missing'
       },
       mrpDeclaration: {
         status: mrpData.found && mrpData.format_valid ? 'pass' : (mrpData.found ? 'review' : 'violation'),
@@ -294,6 +339,11 @@
         status: careData.found && careData.format_valid ? 'pass' : (careData.found ? 'review' : 'violation'),
         label: 'Consumer Care Helpline (Rule 6(2))',
         value: careData.found ? careData.text : 'Customer grievance redressal not detected'
+      },
+      countryOfOrigin: {
+        status: originData.found ? 'pass' : 'review',
+        label: 'Country of Origin (Rule 6(1)(n))',
+        value: originData.found ? originVal : 'Country of origin not detected on scanned surface'
       }
     };
 
@@ -347,6 +397,7 @@
       score: score,
       verifiedDate: verifiedDateStr,
       licenceNo: fssaiVal,
+      countryOfOrigin: originVal,
       declarations: declarations,
       rawBackendVerdict: verdict,
       calibrated: firstImg ? firstImg.calibrated : false,

@@ -16,30 +16,39 @@ Accepts either:
 """
 
 import sys
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict, Optional, Any
 
 import cv2
 import numpy as np
-from paddleocr import PaddleOCR
+
+try:
+    from paddleocr import PaddleOCR
+except ImportError:
+    PaddleOCR = None
 
 # ---------------------------------------------------------------------------
 # PaddleOCR is expensive to construct (loads det/rec/cls model weights), so we
 # build it once and reuse it across calls.
 # ---------------------------------------------------------------------------
-_ocr_engine: Optional["PaddleOCR"] = None
+_ocr_engine: Optional[Any] = None
 
 
-def _get_engine() -> "PaddleOCR":
+def _get_engine():
     global _ocr_engine
     if _ocr_engine is None:
-        _ocr_engine = PaddleOCR(use_angle_cls=True, lang="en")
+        try:
+            from paddleocr import PaddleOCR
+            _ocr_engine = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+        except Exception as e:
+            print(f"[ocr_module] Note: PaddleOCR not available in this environment: {e}")
+            _ocr_engine = False
     return _ocr_engine
 
 
-def _polygon_to_xywh(polygon) -> List[int]:
-    """Convert a 4-point polygon [[x1,y1],...,[x4,y4]] to axis-aligned [x, y, w, h] (plain ints)."""
-    xs = [p[0] for p in polygon]
-    ys = [p[1] for p in polygon]
+def _polygon_to_xywh(polygon, scale_x: float = 1.0, scale_y: float = 1.0) -> List[int]:
+    """Convert a 4-point polygon [[x1,y1],...,[x4,y4]] to axis-aligned [x, y, w, h] (plain ints) mapped back to original scale."""
+    xs = [p[0] / scale_x for p in polygon]
+    ys = [p[1] / scale_y for p in polygon]
     x_min, x_max = min(xs), max(xs)
     y_min, y_max = min(ys), max(ys)
     return [int(round(x_min)), int(round(y_min)), int(round(x_max - x_min)), int(round(y_max - y_min))]
@@ -61,9 +70,66 @@ def _load_image(image: Union[str, np.ndarray]) -> np.ndarray:
     raise ValueError(f"Unsupported image input type: {type(image)}")
 
 
+def preprocess_image_for_ocr(img: np.ndarray):
+    """
+    Normalizes packaging image resolution and applies CLAHE contrast equalization
+    to make 1mm-2mm small statutory fonts readable and eliminate wrapper glare.
+    Returns: (processed_img, scale_x, scale_y)
+    """
+    h, w = img.shape[:2]
+    scale = 1.0
+
+    # 1. Optimal resolution scaling:
+    # If image is small or low-res (e.g. mobile crop or webcam), upscale so small packaging text reaches >15px height.
+    if min(h, w) < 720:
+        scale = min(2.5, 800.0 / float(min(h, w)))
+        new_w = int(round(w * scale))
+        new_h = int(round(h * scale))
+        working_img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+    # If image is massive (>2200px), downscale to avoid OOM on cloud container while keeping crisp resolution
+    elif max(h, w) > 2200:
+        scale = 2000.0 / float(max(h, w))
+        new_w = int(round(w * scale))
+        new_h = int(round(h * scale))
+        working_img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    else:
+        working_img = img.copy()
+
+    # 2. CLAHE (Contrast Limited Adaptive Histogram Equalization) on L channel
+    # Normalizes packaging surface reflections, glare from plastic/foil, and enhances character edges
+    try:
+        lab = cv2.cvtColor(working_img, cv2.COLOR_BGR2LAB)
+        l_chan, a_chan, b_chan = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        cl = clahe.apply(l_chan)
+        enhanced_lab = cv2.merge((cl, a_chan, b_chan))
+        enhanced_bgr = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
+    except Exception:
+        enhanced_bgr = working_img
+
+    scale_x = float(working_img.shape[1]) / float(w)
+    scale_y = float(working_img.shape[0]) / float(h)
+    return enhanced_bgr, scale_x, scale_y
+
+
+def clean_ocr_text(text: str) -> str:
+    """Corrects common OCR character confusions on packaging labels."""
+    if not text:
+        return ""
+    cleaned = text.strip()
+    # Normalize Indian Rupee symbol OCR variants (e.g. MRP ? 50 or MRP * 50 or MRP F 50)
+    import re
+    cleaned = re.sub(r'\bMRP\s*[:.-]?\s*[?*F₹]\s*', 'MRP ₹ ', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\bRs\.\s*[:.-]?\s*', 'Rs. ', cleaned, flags=re.IGNORECASE)
+    # Normalize Net Weight / Net Qty spacing
+    cleaned = re.sub(r'\bNet\s*Wt\s*[:.-]?\s*', 'Net Wt: ', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\bNet\s*Qty\s*[:.-]?\s*', 'Net Qty: ', cleaned, flags=re.IGNORECASE)
+    return cleaned
+
+
 def extract_text(image: Union[str, np.ndarray]) -> List[Dict]:
     """
-    Run OCR on an image and return detected text regions.
+    Run fine-tuned OCR on an image and return detected text regions.
 
     Args:
         image: file path (str) OR decoded numpy image (BGR, as from cv2.imread/cv2.imdecode).
@@ -79,26 +145,51 @@ def extract_text(image: Union[str, np.ndarray]) -> List[Dict]:
         print(f"[ocr_module] Skipping OCR - {e}")
         return []
 
-    try:
-        engine = _get_engine()
-        raw_result = engine.ocr(img, cls=True)  # [[ [poly, (text, conf)], ... ]] per image
-    except Exception as e:
-        print(f"[ocr_module] OCR failed - {e}")
-        return []
-
-    # PaddleOCR wraps results per input image; we only ever pass one image at a time.
-    # raw_result[0] can be None (some versions) or [] when nothing is detected.
-    lines = raw_result[0] if raw_result else None
-    if not lines:
-        return []
+    # 1. Preprocess image for maximum text detection accuracy
+    proc_img, scale_x, scale_y = preprocess_image_for_ocr(img)
 
     results = []
-    for polygon, (text, conf) in lines:
-        results.append({
-            "text": str(text),
-            "box": _polygon_to_xywh(polygon),
-            "conf": float(conf),
-        })
+    engine = _get_engine()
+
+    # Strategy A: PaddleOCR (Production Render Container)
+    if engine:
+        try:
+            raw_result = engine.ocr(proc_img, cls=True)
+            lines = raw_result[0] if raw_result else None
+            if lines:
+                for polygon, (text, conf) in lines:
+                    norm_text = clean_ocr_text(str(text))
+                    if norm_text:
+                        results.append({
+                            "text": norm_text,
+                            "box": _polygon_to_xywh(polygon, scale_x, scale_y),
+                            "conf": float(conf),
+                        })
+        except Exception as e:
+            print(f"[ocr_module] PaddleOCR execution failed - {e}")
+
+    # Strategy B: Graceful PyTesseract fallback if PaddleOCR is not installed or returned 0 results
+    if not results:
+        try:
+            import pytesseract
+            data = pytesseract.image_to_data(proc_img, output_type=pytesseract.Output.DICT)
+            n_boxes = len(data.get("text", []))
+            for i in range(n_boxes):
+                raw_t = data["text"][i].strip()
+                if raw_t and int(data.get("conf", [0])[i]) > 25:
+                    bx = int(round(data["left"][i] / scale_x))
+                    by = int(round(data["top"][i] / scale_y))
+                    bw = int(round(data["width"][i] / scale_x))
+                    bh = int(round(data["height"][i] / scale_y))
+                    conf = float(data["conf"][i]) / 100.0
+                    results.append({
+                        "text": clean_ocr_text(raw_t),
+                        "box": [bx, by, bw, bh],
+                        "conf": conf
+                    })
+        except Exception as e:
+            print(f"[ocr_module] PyTesseract fallback notice: {e}")
+
     return results
 
 

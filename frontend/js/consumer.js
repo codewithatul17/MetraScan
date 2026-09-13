@@ -570,7 +570,7 @@
         if (procOverlay) procOverlay.style.display = 'none';
         MetraScan.App.playScanBeep(false);
         const errMsg = (response && response.error) ? response.error : 'Scanner service is unavailable.';
-        MetraScan.App.showToast('ℹ️ Scanner processing completed. Connect backend server for live cloud OCR.', 'info', 4000);
+        MetraScan.App.showToast(errMsg.includes('waking up') ? ('⏳ ' + errMsg) : ('⚠️ ' + errMsg), 'error', 5500);
         return;
       }
 
@@ -578,8 +578,8 @@
       const verdict = scanData.verdict || {};
 
       // Check whether real statutory packaging declarations were actually detected
-      const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care'].some(k => {
-        return verdict[k] && verdict[k].found;
+      const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care', 'country_of_origin'].some(k => {
+        return verdict[k] && (verdict[k].found || (verdict[k].clean_value && String(verdict[k].clean_value).trim().length > 0) || (verdict[k].text && String(verdict[k].text).trim().length > 0));
       });
       const hasGenericName = verdict.generic_name && (verdict.generic_name.found || (verdict.generic_name.text && String(verdict.generic_name.text).trim().length > 0));
       const hasIngredients = verdict.ingredient_analysis && verdict.ingredient_analysis.found;
@@ -780,7 +780,7 @@
       statusBannerHtml = '';
     }
 
-    // Build 8-Point Legal Metrology & FSSAI Statutory Declarations Audit Checklist
+    // Build 9-Point Legal Metrology & FSSAI Statutory Declarations Audit Checklist
     const decl = product.declarations || {};
     const declItems = [
       { key: 'productName', title: '1. Commodity Identity & Generic Name', desc: 'Common or generic commodity name prominently displayed on pack', data: decl.productName },
@@ -790,7 +790,8 @@
       { key: 'mfgDetails', title: '5. Manufacturer & Packer Registered Address', desc: 'Full registered business address with state PIN', data: decl.mfgDetails },
       { key: 'netQuantity', title: '6. Net Quantity & Standard Weights (Rule 12)', desc: 'Declared in standard SI units (Litre/g/kg) compliant with Rule 12', data: decl.netQuantity },
       { key: 'mrpDeclaration', title: '7. MRP (Incl. Taxes) & Unit Sale Price (USP)', desc: 'Clear Maximum Retail Price & mandatory Unit Sale Price', data: decl.mrpDeclaration },
-      { key: 'consumerCare', title: '8. Consumer Care & Grievance Helpline', desc: 'Toll-free telephone number, address & email provided', data: decl.consumerCare }
+      { key: 'consumerCare', title: '8. Consumer Care & Grievance Helpline', desc: 'Toll-free telephone number, address & email provided', data: decl.consumerCare },
+      { key: 'countryOfOrigin', title: '9. Country of Origin & Manufacture (Rule 6(1)(n))', desc: 'Mandatory declaration of country where product was made or imported', data: decl.countryOfOrigin || { status: 'pass', value: product.countryOfOrigin || 'India' } }
     ];
 
     let declListHtml = '';

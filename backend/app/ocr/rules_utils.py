@@ -43,14 +43,17 @@ DEFAULT_PACKAGING = "normal"
 _FALLBACK_NUMERAL_HEIGHT_MM = NUMERAL_HEIGHT_TABLE_MM[0]
 
 _QUANTITY_PATTERN = re.compile(
-    r"(\d+(?:\.\d+)?)\s?(kg|kgs|g|gm|gms|l|ltr|ml)\b", re.IGNORECASE
+    r"(\d+(?:\.\d+)?)\s*(kg|kgs|kilogram|kilograms|g|gm|gms|gram|grams|l|ltr|ltrs|liter|liters|litre|litres|ml|mls|milli\s*litre|n|u|units?|pcs?|pieces?|tablets?|capsules?)\b",
+    re.IGNORECASE
 )
 
 _UNIT_TO_GRAMS_OR_ML = {
-    "g": 1, "gm": 1, "gms": 1,
-    "kg": 1000, "kgs": 1000,
-    "ml": 1,
-    "l": 1000, "ltr": 1000,
+    "g": 1, "gm": 1, "gms": 1, "gram": 1, "grams": 1,
+    "kg": 1000, "kgs": 1000, "kilogram": 1000, "kilograms": 1000,
+    "ml": 1, "mls": 1, "milli litre": 1, "millilitre": 1,
+    "l": 1000, "ltr": 1000, "ltrs": 1000, "liter": 1000, "liters": 1000, "litre": 1000, "litres": 1000,
+    "n": 100, "u": 100, "unit": 100, "units": 100, "pc": 100, "pcs": 100, "piece": 100, "pieces": 100,
+    "tablet": 100, "tablets": 100, "capsule": 100, "capsules": 100
 }
 
 

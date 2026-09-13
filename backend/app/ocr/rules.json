@@ -5,7 +5,15 @@
   "declarations": {
     "manufacturer": {
       "legal_basis": "Rule 6(1)(a)",
-      "keywords": ["Manufactured by", "Mfg by", "Marketed by", "Packed by", "Manufacturer", "Marketedby", "Mfgby", "Packedby", "Manufacturedby"],
+      "keywords": [
+        "Manufactured by", "Mfg by", "Mfd by", "Mfd. by", "Mfg. by", "Marketed by",
+        "Packed by", "Pkd by", "Pkd. by", "Manufacturer", "Marketedby", "Mfgby",
+        "Packedby", "Manufacturedby", "Packaged by", "Packaged & Marketed by",
+        "Packed & Marketed by", "Manufactured & Marketed by", "Marketed & Distributed by",
+        "Mfg. & Pkd. by", "Imported by", "Imported & Marketed by", "Produced by",
+        "Processed by", "Bottled by", "Baker", "Name and Address of Manufacturer",
+        "Registered Office", "Regd Office", "Factory"
+      ],
       "pattern": ".{3,}",
       "height_type": "letter",
       "auto_checkable": true
@@ -20,27 +28,54 @@
     },
     "net_quantity": {
       "legal_basis": "Rule 6(1)(c); numeral height per Rule 7(2) Table-I",
-      "keywords": ["Net Qty", "Net Quantity", "Net Wt", "Net Weight", "Net Vol"],
-      "pattern": "\\d+(\\.\\d+)?\\s?(g|kg|ml|l|gm|gms|kgs|ltr)\\b",
+      "keywords": [
+        "Net Qty", "Net Quantity", "Net Wt", "Net Weight", "Net Vol", "Net Volume",
+        "Net Content", "Net Contents", "Net Mass", "Quantity", "Net Wt.", "Net Qty.",
+        "Net Qnty", "Net Vol.", "Net", "Wt.", "Qty", "Quantity:", "Net Quantity:", "Net Qty:"
+      ],
+      "pattern": "\\d+(?:\\.\\d+)?\\s*(?:kg|kgs|kilogram|kilograms|g|gm|gms|gram|grams|l|ltr|ltrs|liter|liters|litre|litres|ml|mls|milli\\s*litre|n|u|units?|pcs?|pieces?|tablets?|capsules?)\\b",
       "height_type": "numeral_table"
     },
     "mfg_date": {
       "legal_basis": "Rule 6(1)(d)",
-      "keywords": ["MFG", "MFD", "Mfg Date", "Pkd", "Packed on", "Manufactured on", "Date of Manufacture"],
-      "pattern": "\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}\\b|\\b(19|20)\\d{2}\\b",
+      "keywords": [
+        "MFG", "MFD", "Mfg Date", "Mfd Date", "Mfg. Date", "Mfd. Date",
+        "Pkd", "Pkd.", "Pkd Date", "Pkd. Date", "Packed on", "Date of Pkg",
+        "Date of Packing", "Manufactured on", "Date of Manufacture", "Date of Mfg",
+        "DOM", "PKD", "MFG DT", "MFD DT", "Packaging Date"
+      ],
+      "pattern": "\\b(?:\\d{1,2}[/.-])?\\d{1,2}[/.-]\\d{2,4}\\b|\\b(?:\\d{1,2}[\\s/-])?(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\\s/-]+(?:20)?\\d{2}\\b|\\b(?:19|20)\\d{2}\\b",
       "height_type": "letter",
       "auto_checkable": true
     },
     "mrp": {
       "legal_basis": "Rule 6(1)(e); numeral height per Rule 7(2) Table-I (same table as net-quantity numerals -- 'any numeral in the declaration')",
-      "keywords": ["MRP", "M.R.P", "M.R.P.", "Maximum Retail Price"],
-      "pattern": "\\d+(\\.\\d{1,2})?",
+      "keywords": [
+        "MRP", "M.R.P", "M.R.P.", "Maximum Retail Price", "Max Retail Price",
+        "MRP Rs", "M.R.P. Rs", "MRP ₹", "MRP: ₹", "MRP: Rs", "Price", "Retail Price", "M.R.P :", "MRP:"
+      ],
+      "pattern": "\\d+(?:\\.\\d{1,2})?",
       "height_type": "numeral_table"
     },
     "consumer_care": {
       "legal_basis": "Rule 6(2)",
-      "keywords": ["Consumer Care", "Customer Care", "For complaints", "Toll Free", "Helpline", "For queries", "Contact us", "Reach us at", "For feedback"],
-      "pattern": "\\d{6,}|.{5,}",
+      "keywords": [
+        "Consumer Care", "Customer Care", "Consumer Cell", "Customer Support",
+        "Customer Service", "For complaints", "Toll Free", "Helpline", "For queries",
+        "Contact us", "Reach us at", "For feedback", "Grievance", "Care Executive",
+        "Write to us", "Call us at"
+      ],
+      "pattern": "\\d{6,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}|.{5,}",
+      "height_type": "letter",
+      "auto_checkable": true
+    },
+    "country_of_origin": {
+      "legal_basis": "Rule 6(1)(n) -- Country of origin or manufacture",
+      "keywords": [
+        "Country of Origin", "Made in", "Product of", "Origin", "Produced in",
+        "Manufactured in", "Country of Mfg"
+      ],
+      "pattern": "[A-Za-z\\s]{3,}",
       "height_type": "letter",
       "auto_checkable": true
     }

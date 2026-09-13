@@ -2809,6 +2809,13 @@
         };
       });
 
+      const btnPresetRender = document.getElementById('btn-preset-render');
+      if (btnPresetRender && serverUrlInput) {
+        btnPresetRender.onclick = function() {
+          serverUrlInput.value = 'https://metrascan-1.onrender.com';
+        };
+      }
+
       if (btnPresetLocal && serverUrlInput) {
         btnPresetLocal.onclick = function() {
           serverUrlInput.value = 'http://localhost:8000';
@@ -3013,13 +3020,14 @@
 
         <div class="form-group">
           <label class="form-label" for="input-server-backend-url" style="font-weight: 700;">Backend API Base URL</label>
-          <input type="url" id="input-server-backend-url" class="form-input mono-text" placeholder="http://localhost:8000" style="font-size: 0.92rem; padding: 10px;">
-          <small class="form-hint" style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 4px;">Must be an HTTPS endpoint when scanning on a mobile device.</small>
+          <input type="url" id="input-server-backend-url" class="form-input mono-text" placeholder="https://metrascan-1.onrender.com" style="font-size: 0.92rem; padding: 10px;">
+          <small class="form-hint" style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 4px;">Default live cloud backend is https://metrascan-1.onrender.com.</small>
         </div>
 
         <div>
           <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; display: block;">Quick Presets:</label>
           <div class="server-config-presets">
+            <button type="button" class="preset-chip-btn" id="btn-preset-render" style="border-color: #10b981; color: #10b981; font-weight: 700;">☁️ Render Cloud (Live)</button>
             <button type="button" class="preset-chip-btn" id="btn-preset-local">💻 Localhost (8000)</button>
             <button type="button" class="preset-chip-btn" id="btn-preset-lan">📶 Current Hostname</button>
           </div>

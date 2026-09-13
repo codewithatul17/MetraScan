@@ -21,7 +21,10 @@ from typing import Dict, Optional
 import cv2
 import numpy as np
 
-from rules_utils import get_min_height_mm
+try:
+    from app.ocr.rules_utils import get_min_height_mm
+except ImportError:
+    from rules_utils import get_min_height_mm
 
 COLOR_PASS = (0, 200, 0)   # green, BGR
 COLOR_FAIL = (0, 0, 220)   # red, BGR
@@ -51,9 +54,12 @@ def annotate(image: np.ndarray, verdict: Dict, mm_per_px: Optional[float]) -> np
     # mrp and net_quantity's minimum numeral height both depend on the DECLARED
     # net quantity value (Rule 7(2) Table-I), not on the field being measured -
     # so pull it once up front and hand it to every lookup that needs it.
-    net_quantity_text = verdict.get("net_quantity", {}).get("text")
+    net_qty_entry = verdict.get("net_quantity")
+    net_quantity_text = net_qty_entry.get("text") if isinstance(net_qty_entry, dict) else None
 
     for field, data in verdict.items():
+        if not isinstance(data, dict):
+            continue
         box = data.get("box")
         if box is None:
             # Nothing detected for this field - nothing to draw. (Rules module
