@@ -1,4 +1,4 @@
-﻿"""
+"""
 Core configuration module for Legal Metrology Scanner backend.
 Loads environment variables from .env or environment with safe fallbacks.
 """
@@ -30,5 +30,5 @@ SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
 # Server Settings
-HOST = os.getenv("HOST", "127.0.0.1")
+HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 8000))

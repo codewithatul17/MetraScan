@@ -1,0 +1,29 @@
+﻿# MetraScan Blueprint for Render (Frontend + Backend)
+services:
+  # 1. FastAPI + PaddleOCR Backend Web Service
+  - type: web
+    name: metrascan-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+
+  # 2. Static Frontend Site
+  - type: static
+    name: metrascan-frontend
+    rootDir: frontend
+    buildCommand: ""
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
