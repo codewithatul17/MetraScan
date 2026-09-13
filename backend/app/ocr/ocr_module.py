@@ -86,9 +86,9 @@ def preprocess_image_for_ocr(img: np.ndarray):
         new_w = int(round(w * scale))
         new_h = int(round(h * scale))
         working_img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
-    # If image is massive (>2200px), downscale to avoid OOM on cloud container while keeping crisp resolution
-    elif max(h, w) > 2200:
-        scale = 2000.0 / float(max(h, w))
+    # If image is massive (>1600px), downscale to avoid OOM on cloud container and optimize OCR speed
+    elif max(h, w) > 1600:
+        scale = 1400.0 / float(max(h, w))
         new_w = int(round(w * scale))
         new_h = int(round(h * scale))
         working_img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)

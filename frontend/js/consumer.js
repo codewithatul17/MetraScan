@@ -387,6 +387,11 @@
     const targetMode = (params && params.mode) || 'standard';
     setScannerMode(targetMode);
 
+    // Pre-warm the backend so cold-starts are eliminated while user frames their product
+    if (MetraScan.API && MetraScan.API.warmupServer) {
+      MetraScan.API.warmupServer();
+    }
+
     const video = document.getElementById('camera-preview-video');
     const statusNotice = document.getElementById('scanner-status-notice');
 
@@ -612,16 +617,35 @@
     if (procOverlay) procOverlay.style.display = 'flex';
     if (procIcon) procIcon.textContent = isIngredientsMode ? '🌿' : '⚖️';
     if (procTitle) procTitle.textContent = isIngredientsMode ? 'Auditing Ingredients & Allergens' : 'Auditing Statutory Declarations';
-    if (procStatus) procStatus.textContent = isIngredientsMode ? 'Extracting ingredients panel and checking allergens...' : 'Scanning captured packaging with AI OCR Engine...';
+    if (procStatus) procStatus.textContent = isIngredientsMode ? 'Optimizing photo & analyzing ingredients...' : 'Optimizing photo & analyzing label...';
 
     MetraScan.App.showToast(isIngredientsMode ? '🌿 Analyzing ingredients, health score & allergens...' : '🔍 Analyzing label for Legal Metrology declarations...', 'info', 3000);
+
+    // Live progress timer to keep user informed during cold start or intensive OCR
+    let elapsedSec = 0;
+    const progressTimer = setInterval(() => {
+      elapsedSec += 2;
+      if (!procStatus) return;
+      if (elapsedSec >= 4 && elapsedSec < 10) {
+        procStatus.textContent = isIngredientsMode
+          ? 'Scanning packaging text & isolating ingredients table...'
+          : 'Extracting packaging declarations & SI unit weights...';
+      } else if (elapsedSec >= 10 && elapsedSec < 24) {
+        procStatus.textContent = '⏳ Cloud server waking up from standby (free-tier spinup)...';
+      } else if (elapsedSec >= 24 && elapsedSec < 42) {
+        procStatus.textContent = '⚡ Running neural OCR character recognition...';
+      } else if (elapsedSec >= 42) {
+        procStatus.textContent = isIngredientsMode
+          ? '🌿 Evaluating additives toxicity & allergen markers...'
+          : '⚖️ Verifying statutory compliance & legal declarations...';
+      }
+    }, 2000);
 
     const currentUser = MetraScan.Auth.getCurrentUser();
 
     try {
-      if (procStatus) procStatus.textContent = isIngredientsMode ? 'Evaluating additives & detecting food allergens...' : 'Extracting packaging declarations & checking compliance...';
-
       const response = await MetraScan.API.scanImages([file], currentUser);
+      clearInterval(progressTimer);
       
       // If server could not be reached or scan errored out
       if (!response || !response.ok || !response.data) {
