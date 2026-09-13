@@ -361,16 +361,26 @@
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment',
+          facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
+      })
+      .catch(function(err) {
+        console.warn('Primary camera constraint failed, retrying with fallback:', err);
+        return navigator.mediaDevices.getUserMedia({ video: true });
       })
       .then(function(stream) {
         cameraStream = stream;
         if (video) {
           video.srcObject = stream;
-          video.play();
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('autoplay', 'true');
+          video.muted = true;
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(function() {});
+          }
           video.style.display = 'block';
         }
         if (statusNotice) {
@@ -378,6 +388,7 @@
             ? 'Live camera active. Point at back ingredients & nutrition panel.'
             : 'Live camera active. Point at package label.';
           statusNotice.className = 'scanner-status-banner status-live';
+          statusNotice.style.display = 'inline-flex';
         }
         startAlignmentAnalyzer();
       })
@@ -387,12 +398,14 @@
         if (statusNotice) {
           statusNotice.textContent = 'Camera unavailable. Please upload a packaging photo or enter code manually below.';
           statusNotice.className = 'scanner-status-banner status-sim';
+          statusNotice.style.display = 'inline-flex';
         }
       });
     } else {
       if (statusNotice) {
         statusNotice.textContent = 'Scanner ready. Please upload a packaging photo or enter code manually below.';
         statusNotice.className = 'scanner-status-banner status-sim';
+        statusNotice.style.display = 'inline-flex';
       }
     }
 
@@ -486,8 +499,17 @@
     if (captureBtn) {
       captureBtn.onclick = function() {
         const video = document.getElementById('camera-preview-video');
-        const photoUrl = MetraScan.App.capturePhotoFromVideo(video, 'consumer-shutter-flash', null);
+        let photoUrl = null;
+        if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+          photoUrl = MetraScan.App.capturePhotoFromVideo(video, 'consumer-shutter-flash', null);
+        }
+
         if (!photoUrl) {
+          if (galleryInput) {
+            MetraScan.App.showToast('Camera feed not ready — select or capture a photo', 'info', 2500);
+            galleryInput.click();
+            return;
+          }
           MetraScan.App.showToast('Camera feed is not ready. Please allow camera permissions or upload an image.', 'error', 3500);
           return;
         }
@@ -989,6 +1011,44 @@
       `;
     }
 
+    const role = MetraScan.Auth ? MetraScan.Auth.getUserRole() : 'consumer';
+    const isInspector = (role === 'ministry');
+
+    let actionsBarHtml = '';
+    if (isInspector) {
+      actionsBarHtml = `
+        <div class="verification-actions-bar verification-actions-inspector" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <button class="btn btn-primary btn-lg" id="btn-inspector-proceed-report" data-product-id="${product.id}" style="width: 100%; font-weight: 700; padding: 13px 18px; font-size: 0.95rem; background: #002B49; border-color: #002B49; box-shadow: 0 4px 12px rgba(0,43,73,0.25);">
+            <span class="btn-icon">⚖️</span>
+            <span>File Official Inspection Report & Seizure Notice</span>
+          </button>
+          <div style="display: flex; gap: 10px; width: 100%;">
+            <button class="btn btn-outline" id="btn-inspector-view-cert" data-product-id="${product.id}" style="flex: 1; font-weight: 600;">
+              <span class="btn-icon">📄</span>
+              <span>Official Certificate</span>
+            </button>
+            <button class="btn btn-outline" data-navigate="ministry-scan" style="flex: 1; font-weight: 600;">
+              <span class="btn-icon">📷</span>
+              <span>Re-Scan Package</span>
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      actionsBarHtml = `
+        <div class="verification-actions-bar">
+          <button class="btn btn-primary btn-save-product ${isSaved ? 'btn-saved-active' : ''}" id="btn-save-toggle" data-product-id="${product.id}">
+            <span class="btn-icon">${isSaved ? '★' : '☆'}</span>
+            <span class="btn-text">${isSaved ? 'Saved in Products' : 'Save Product'}</span>
+          </button>
+          <button class="btn btn-danger-outline" id="btn-report-issue" data-product-id="${product.id}">
+            <span class="btn-icon">⚠</span>
+            <span>Report Issue</span>
+          </button>
+        </div>
+      `;
+    }
+
     // Render Full Page
     container.innerHTML = `
       <div class="verification-hero">
@@ -1037,44 +1097,56 @@
 
         ${ingredientScoreCardHtml}
 
-        <div class="verification-actions-bar">
-          <button class="btn btn-primary btn-save-product ${isSaved ? 'btn-saved-active' : ''}" id="btn-save-toggle" data-product-id="${product.id}">
-            <span class="btn-icon">${isSaved ? '★' : '☆'}</span>
-            <span class="btn-text">${isSaved ? 'Saved in Products' : 'Save Product'}</span>
-          </button>
-          <button class="btn btn-danger-outline" id="btn-report-issue" data-product-id="${product.id}">
-            <span class="btn-icon">⚠</span>
-            <span>Report Issue</span>
-          </button>
-        </div>
+        ${actionsBarHtml}
       </div>
     `;
 
-    // Save toggle event
-    const saveBtn = document.getElementById('btn-save-toggle');
-    if (saveBtn) {
-      saveBtn.onclick = function() {
-        const saved = MetraScan.App.toggleSaveProduct(product.id);
-        if (saved) {
-          this.classList.add('btn-saved-active');
-          this.classList.remove('btn-outline');
-          this.innerHTML = '<span class="btn-icon">★</span><span class="btn-text">Saved in Products</span>';
-          MetraScan.App.showToast('Product bookmarked in Saved Products.', 'success');
-        } else {
-          this.classList.remove('btn-saved-active');
-          this.classList.add('btn-outline');
-          this.innerHTML = '<span class="btn-icon">☆</span><span class="btn-text">Save Product</span>';
-          MetraScan.App.showToast('Product removed from bookmarks.', 'info');
-        }
-      };
-    }
+    if (isInspector) {
+      const inspectorReportBtn = document.getElementById('btn-inspector-proceed-report');
+      if (inspectorReportBtn) {
+        inspectorReportBtn.onclick = function() {
+          MetraScan.Nav.navigateTo('ministry-inspection', {
+            productId: product.id,
+            location: 'Retail Inspection Point'
+          });
+        };
+      }
+      const inspectorCertBtn = document.getElementById('btn-inspector-view-cert');
+      if (inspectorCertBtn) {
+        inspectorCertBtn.onclick = function() {
+          MetraScan.Nav.navigateTo('consumer-report-view', {
+            productId: product.id,
+            location: 'National Legal Metrology Verification Portal'
+          });
+        };
+      }
+    } else {
+      // Save toggle event
+      const saveBtn = document.getElementById('btn-save-toggle');
+      if (saveBtn) {
+        saveBtn.onclick = function() {
+          const saved = MetraScan.App.toggleSaveProduct(product.id);
+          if (saved) {
+            this.classList.add('btn-saved-active');
+            this.classList.remove('btn-outline');
+            this.innerHTML = '<span class="btn-icon">★</span><span class="btn-text">Saved in Products</span>';
+            MetraScan.App.showToast('Product bookmarked in Saved Products.', 'success');
+          } else {
+            this.classList.remove('btn-saved-active');
+            this.classList.add('btn-outline');
+            this.innerHTML = '<span class="btn-icon">☆</span><span class="btn-text">Save Product</span>';
+            MetraScan.App.showToast('Product removed from bookmarks.', 'info');
+          }
+        };
+      }
 
-    // Report issue button
-    const reportBtn = document.getElementById('btn-report-issue');
-    if (reportBtn) {
-      reportBtn.onclick = function() {
-        openIssueReportModal(product);
-      };
+      // Report issue button
+      const reportBtn = document.getElementById('btn-report-issue');
+      if (reportBtn) {
+        reportBtn.onclick = function() {
+          openIssueReportModal(product);
+        };
+      }
     }
   }
 

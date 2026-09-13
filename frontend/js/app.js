@@ -420,7 +420,7 @@
 
     let photoDataUrl = null;
 
-    if (videoEl && videoEl.videoWidth && videoEl.videoHeight && videoEl.readyState >= 2) {
+    if (videoEl && videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
       try {
         const canvas = document.createElement('canvas');
         canvas.width = videoEl.videoWidth;
@@ -591,6 +591,39 @@
           openModal('modal-manual-code');
         }
       };
+    }
+
+    const proceedCaseBtn = document.getElementById('btn-invalid-scan-proceed-case');
+    if (proceedCaseBtn) {
+      if (isInspector) {
+        proceedCaseBtn.style.display = 'block';
+        proceedCaseBtn.onclick = function() {
+          closeModal('modal-scan-invalid');
+          const currentUser = MetraScan.Auth.getCurrentUser();
+          const product = MetraScan.API.mapVerdictToProduct(scanData, sourceName || 'Seized Packaging Sample', currentUser, photoUrl);
+          product.status = 'violation';
+          if (scanData && scanData.supabase_id) {
+            product.supabaseId = scanData.supabase_id;
+          }
+          MetraScan.App.addProduct(product);
+          MetraScan.App.addScanToHistory(product.id);
+          if (photoUrl && MetraScan.Ministry && MetraScan.Ministry.addEvidenceItem) {
+            MetraScan.Ministry.addEvidenceItem({
+              id: 'ev-' + Date.now(),
+              type: 'Field Seizure Photo',
+              name: 'Seized Packaging (' + (sourceName || 'Inspection Scan') + ')',
+              url: photoUrl,
+              time: 'Just now'
+            });
+          }
+          MetraScan.Nav.navigateTo('ministry-inspection', {
+            productId: product.id,
+            location: 'Retail Inspection Point'
+          });
+        };
+      } else {
+        proceedCaseBtn.style.display = 'none';
+      }
     }
 
     // Sound & open modal

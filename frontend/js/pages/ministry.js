@@ -384,16 +384,17 @@
 
         MetraScan.App.showToast('🔍 Analyzing package label with Legal Metrology AI...', 'info', 2500);
 
+        const currentUser = MetraScan.Auth.getCurrentUser();
         const reader = new FileReader();
         reader.onload = async function(evt) {
           const imgUrl = evt.target.result;
 
           // Attempt real scan with backend
           try {
-            const scanResponse = await MetraScan.API.scanImages([file]);
+            const scanResponse = await MetraScan.API.scanImages([file], currentUser);
             let finalImage = imgUrl;
 
-            if (scanResponse.ok) {
+            if (scanResponse && scanResponse.ok && scanResponse.data) {
               const data = scanResponse.data;
               const verdict = data.verdict || {};
               const firstImg = data.images && data.images[0];
@@ -402,45 +403,34 @@
                 finalImage = 'data:image/jpeg;base64,' + firstImg.image_base64;
               }
 
-              // Update checklist with real findings
-              if (verdict.mfg_date) {
-                inspectionChecklist.batchAndMfg = verdict.mfg_date.found && verdict.mfg_date.format_valid ? 'pass' : (verdict.mfg_date.found ? 'review' : 'violation');
+              // Create product record and add to state
+              const product = MetraScan.API.mapVerdictToProduct(data, file.name, currentUser, finalImage);
+              if (data.supabase_id) {
+                product.supabaseId = data.supabase_id;
               }
-              if (verdict.net_quantity) {
-                inspectionChecklist.measurement = verdict.net_quantity.found && verdict.net_quantity.format_valid ? 'pass' : (verdict.net_quantity.found ? 'review' : 'violation');
-              }
-              if (verdict.mrp) {
-                inspectionChecklist.labeling = verdict.mrp.found && verdict.mrp.format_valid ? 'pass' : (verdict.mrp.found ? 'review' : 'violation');
-              }
-              if (verdict.manufacturer) {
-                inspectionChecklist.manufacturer = verdict.manufacturer.found ? 'pass' : 'violation';
+              MetraScan.App.addProduct(product);
+
+              // Update product select dropdown
+              const pSelect = document.getElementById('wizard-product-select');
+              if (pSelect) {
+                const opt = document.createElement('option');
+                opt.value = product.id;
+                opt.textContent = `${product.name} (Uploaded Label)`;
+                opt.selected = true;
+                pSelect.insertBefore(opt, pSelect.firstChild);
               }
 
-              // Fill notes with real findings
-              const notesInput = document.getElementById('wizard-notes-input');
-              if (notesInput) {
-                const detectedParts = [];
-                if (verdict.mrp && verdict.mrp.text) detectedParts.push(`MRP: ${verdict.mrp.text}`);
-                if (verdict.net_quantity && verdict.net_quantity.text) detectedParts.push(`Net Qty: ${verdict.net_quantity.text}`);
-                if (verdict.mfg_date && verdict.mfg_date.text) detectedParts.push(`Mfg: ${verdict.mfg_date.text}`);
-                if (detectedParts.length > 0) {
-                  notesInput.value = `Label AI OCR Audit: ${detectedParts.join(' | ')}. ${firstImg && firstImg.calibrated ? '₹5 Coin Reference Calibrated.' : 'Uncalibrated (No reference coin).'}`;
-                }
-              }
-
+              // Update preview & pre-populate all form fields
+              updateWizardProductPreview(product.id);
               renderWizardChecklistUI();
               checkViolationRecommendation();
-              MetraScan.App.showToast('✓ AI OCR completed! Checklist auto-populated from real label.', 'success', 3500);
+              MetraScan.App.showToast('✓ AI OCR completed! Form auto-populated from uploaded label.', 'success', 3500);
             } else {
-              MetraScan.App.showToast('Package image uploaded. (AI backend offline or error: ' + scanResponse.error + ')', 'info', 4000);
+              MetraScan.App.showToast('Package image uploaded. (AI note: ' + ((scanResponse && scanResponse.error) || 'Processing completed') + ')', 'info', 4000);
             }
 
-            // Update image preview thumbnail
-            const thumb = document.querySelector('.wizard-prod-thumb');
-            if (thumb) thumb.src = finalImage;
-
             // Automatically add as Evidence item
-            activeEvidenceList.push({
+            activeEvidenceList.unshift({
               id: 'ev-' + Date.now(),
               type: 'Package Label Photo',
               name: file.name,
@@ -451,6 +441,7 @@
 
           } catch (err) {
             console.error('Wizard scan error:', err);
+            MetraScan.App.showToast('Error analyzing image: ' + err.message, 'error');
           }
         };
         reader.readAsDataURL(file);
@@ -531,7 +522,6 @@
     // Determine preview image (uploaded custom photo or default product SVG)
     const activeImage = customProductImages[prod.id] || prod.image;
 
-    const previewContainer = document.getElementById('wizard-product-preview');
     if (previewContainer) {
       previewContainer.innerHTML = `
         <div class="wizard-prod-summary" style="position: relative;">
@@ -553,7 +543,6 @@
     }
 
     // Also populate Declaration Info tab (Step 2)
-    const declContainer = document.getElementById('wizard-declarations-info');
     if (declContainer) {
       declContainer.innerHTML = `
         <div class="declaration-review-table">
@@ -1244,6 +1233,8 @@
    * Inspector Camera Scanner & Field Tooling
    */
   let inspectorCameraStream = null;
+  let inspectorCurrentFacingMode = 'environment';
+  let inspectorAvailableCameras = [];
   let inspectorAlignmentInterval = null;
   let inspectorOrientationListener = null;
   let inspectorMotionListener = null;
@@ -1480,43 +1471,80 @@
   function initInspectorScanner() {
     const video = document.getElementById('inspector-camera-preview-video');
     const statusNotice = document.getElementById('inspector-scanner-status-notice');
+    const toggleBtn = document.getElementById('btn-inspector-camera-toggle');
 
-    // Immediately activate guidance pill & orientation listeners
+    // Immediately stop any existing stream to prevent hardware lock
+    stopInspectorCamera();
+
+    // Start guidance & orientation analyzer
     startInspectorAlignmentAnalyzer();
 
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({
+    function startStream(facing) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (statusNotice) {
+          statusNotice.textContent = 'Camera not supported in browser. Tap "Upload Label Photo" below.';
+          statusNotice.className = 'scanner-status-banner status-sim';
+          statusNotice.style.display = 'inline-flex';
+        }
+        return Promise.reject(new Error('getUserMedia not supported'));
+      }
+
+      // First attempt with ideal facingMode and resolution
+      return navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment',
+          facingMode: { ideal: facing },
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
+      })
+      .catch(function(err) {
+        console.warn('Primary inspector camera constraint rejected, falling back to basic video:', err);
+        return navigator.mediaDevices.getUserMedia({ video: true });
       })
       .then(function(stream) {
         inspectorCameraStream = stream;
         if (video) {
           video.srcObject = stream;
-          video.play().catch(function() {});
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('autoplay', 'true');
+          video.muted = true;
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(function(e) {
+              console.warn('Inspector video auto-play prevented:', e);
+            });
+          }
           video.style.display = 'block';
         }
         if (statusNotice) {
-          statusNotice.textContent = 'Field Inspector Camera Active. Align package barcode or MetraSeal QR.';
+          statusNotice.textContent = 'Field Inspector Camera Active. Align package label.';
           statusNotice.className = 'scanner-status-banner status-live';
+          statusNotice.style.display = 'inline-flex';
         }
         startInspectorAlignmentAnalyzer();
-      })
+        return stream;
+      });
+    }
+
+    startStream(inspectorCurrentFacingMode)
       .catch(function(err) {
-        console.warn('Inspector camera unavailable:', err);
+        console.warn('Inspector camera completely unavailable or permission denied:', err);
+        if (video) video.style.display = 'none';
         if (statusNotice) {
-          statusNotice.textContent = 'Field camera in simulated/manual mode. Select sample package below.';
+          statusNotice.textContent = 'Camera unavailable. Tap Shutter or "Upload Label Photo" below.';
           statusNotice.className = 'scanner-status-banner status-sim';
+          statusNotice.style.display = 'inline-flex';
         }
       });
-    } else {
-      if (statusNotice) {
-        statusNotice.textContent = 'Simulated field mode. Tap sample commodity below.';
-        statusNotice.className = 'scanner-status-banner status-sim';
-      }
+
+    // Detect if device has multiple cameras to offer camera toggle
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        inspectorAvailableCameras = devices.filter(d => d.kind === 'videoinput');
+        if (toggleBtn) {
+          toggleBtn.style.display = inspectorAvailableCameras.length > 1 ? 'inline-flex' : 'none';
+        }
+      }).catch(function() {});
     }
 
     setupInspectorScannerEvents();
@@ -1537,6 +1565,16 @@
   }
 
   function setupInspectorScannerEvents() {
+    // Camera switch toggle button
+    const toggleBtn = document.getElementById('btn-inspector-camera-toggle');
+    if (toggleBtn) {
+      toggleBtn.onclick = function() {
+        inspectorCurrentFacingMode = (inspectorCurrentFacingMode === 'environment') ? 'user' : 'environment';
+        initInspectorScanner();
+        MetraScan.App.showToast('Switched to ' + (inspectorCurrentFacingMode === 'environment' ? 'Back' : 'Front') + ' Camera', 'info', 1500);
+      };
+    }
+
     // Simulation pills
     const simBtns = document.querySelectorAll('.inspector-barcode-sim-pill');
     simBtns.forEach(function(btn) {
@@ -1580,8 +1618,18 @@
     if (captureBtn) {
       captureBtn.onclick = function() {
         const video = document.getElementById('inspector-camera-preview-video');
-        const photoUrl = MetraScan.App.capturePhotoFromVideo(video, 'inspector-shutter-flash', null);
+        let photoUrl = null;
+        if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+          photoUrl = MetraScan.App.capturePhotoFromVideo(video, 'inspector-shutter-flash', null);
+        }
+
         if (!photoUrl) {
+          // Fallback if camera stream is not live/ready: prompt camera/gallery file selector
+          if (fileInput) {
+            MetraScan.App.showToast('Camera feed not ready — select or capture a photo', 'info', 2500);
+            fileInput.click();
+            return;
+          }
           MetraScan.App.showToast('Camera feed is not ready. Please allow camera permissions or upload an image.', 'error', 3500);
           return;
         }
@@ -1640,7 +1688,7 @@
         if (procOverlay) procOverlay.style.display = 'none';
         MetraScan.App.playScanBeep(false);
         const errMsg = (response && response.error) ? response.error : 'AI OCR Scanner service is unavailable.';
-        MetraScan.App.showToast('⚠️ ' + errMsg + ' Please ensure the backend is running.', 'error', 5500);
+        MetraScan.App.showToast('⚠️ ' + errMsg, 'error', 5500);
         return;
       }
 
@@ -1648,17 +1696,19 @@
       const verdict = scanData.verdict || {};
 
       // Check whether real statutory packaging declarations were actually detected
-      const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care'].some(k => {
-        return verdict[k] && verdict[k].found;
+      const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care', 'country_of_origin'].some(k => {
+        return verdict[k] && (verdict[k].found || (verdict[k].value && String(verdict[k].value).trim().length > 0) || (verdict[k].text && String(verdict[k].text).trim().length > 0));
       });
       const hasGenericName = verdict.generic_name && (verdict.generic_name.found || (verdict.generic_name.text && String(verdict.generic_name.text).trim().length > 0));
-      const isValidProduct = scanData.is_valid_product || hasDeclarations || hasGenericName;
+      const hasIngredients = verdict.ingredient_analysis && verdict.ingredient_analysis.found;
+      const hasAnyOcrTokens = (scanData.total_ocr_boxes && scanData.total_ocr_boxes > 2);
+      const isValidProduct = scanData.is_valid_product || hasDeclarations || hasGenericName || hasIngredients || hasAnyOcrTokens;
 
       // If NO statutory packaging declarations were detected:
       if (!isValidProduct) {
         if (procOverlay) procOverlay.style.display = 'none';
         MetraScan.App.playScanBeep(false);
-        MetraScan.App.showToast('⚠️ Verification Rejected — Package non-compliant with Rule 6(1)', 'error', 4000);
+        MetraScan.App.showToast('⚠️ Package missing Rule 6(1) declarations', 'warning', 4000);
         MetraScan.App.showInvalidScanModal(scanData, sourceName || file.name, photoUrl, true);
         return;
       }
@@ -1699,9 +1749,8 @@
         if (procOverlay) procOverlay.style.display = 'none';
         if (laser) laser.classList.remove('scanner-laser-matched');
         stopInspectorCamera();
-        MetraScan.Nav.navigateTo('ministry-inspection', {
-          productId: product.id,
-          location: locationVal
+        MetraScan.Nav.navigateTo('consumer-verification', {
+          productId: product.id
         });
       }, 500);
 
@@ -1733,9 +1782,8 @@
     setTimeout(function() {
       if (laser) laser.classList.remove('scanner-laser-matched');
       stopInspectorCamera();
-      MetraScan.Nav.navigateTo('ministry-inspection', {
-        productId: product.id,
-        location: locationVal
+      MetraScan.Nav.navigateTo('consumer-verification', {
+        productId: product.id
       });
     }, 500);
   }
@@ -1901,7 +1949,8 @@
     initInspectionWizard: initInspectionWizard,
     renderReportConfirm: renderReportConfirm,
     renderOfficialReport: renderOfficialReport,
-    renderHistory: renderHistory
+    renderHistory: renderHistory,
+    addEvidenceItem: function(item) { activeEvidenceList.unshift(item); }
   };
 
 })(window);
