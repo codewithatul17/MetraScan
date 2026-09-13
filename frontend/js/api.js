@@ -195,9 +195,11 @@
    * @param {string} sourceName - Filename or description of the image source
    * @returns {object} MetraScan compliant product object
    */
-  function mapVerdictToProduct(scanData, sourceName, user, customPhotoUrl) {
+  function mapVerdictToProduct(scanData, sourceName, user, customPhotoUrl, scanMode) {
     const currentUser = user || (window.MetraScan && window.MetraScan.Auth && window.MetraScan.Auth.getCurrentUser ? window.MetraScan.Auth.getCurrentUser() : null);
     const uniqueId = 'scan-' + Date.now() + '-' + Math.floor(1000 + Math.random() * 9000);
+    const mode = scanMode || (scanData && scanData.scan_mode) || 'standard';
+    const isIngredientsMode = (mode === 'ingredients');
 
     const verdict = scanData.verdict || {};
     const firstImg = (scanData.images && scanData.images[0]) ? scanData.images[0] : null;
@@ -296,7 +298,7 @@
       }
     }
 
-    const productName = genericNameData.text || (sourceName ? sourceName.replace(/\.[^/.]+$/, '') : 'Scanned Packaged Commodity');
+    const productName = genericNameData.text || (sourceName ? sourceName.replace(/\.[^/.]+$/, '') : (isIngredientsMode ? 'Food Product Formulation' : 'Scanned Packaged Commodity'));
 
     // Rule 6(1) audit checks mapping
     const declarations = {
@@ -348,22 +350,46 @@
     };
 
     // Calculate score and status based on real findings
-    const keysToCheck = ['netQuantity', 'mrpDeclaration', 'batchAndMfg', 'mfgDetails', 'consumerCare'];
-    let reviewCount = 0;
-
-    keysToCheck.forEach(k => {
-      const st = declarations[k].status;
-      if (st === 'review' || st === 'violation') reviewCount++;
-    });
-
     let overallStatus = 'verified';
     let statusLabel = 'VERIFIED COMPLIANT';
     let score = 95;
 
-    if (reviewCount > 0 || (firstImg && firstImg.calibrated === false)) {
-      overallStatus = 'review';
-      statusLabel = 'NEEDS REVIEW / ADVISORY';
-      score = Math.max(75, 95 - (reviewCount * 5));
+    if (isIngredientsMode) {
+      // INGREDIENT & ALLERGEN AUDIT MODE:
+      // Status is based on formulation safety & allergens, NOT Legal Metrology Rule 6(1)
+      score = (ingredientAnalysis.score !== null && ingredientAnalysis.score !== undefined) ? ingredientAnalysis.score : 85;
+      const counts = ingredientAnalysis.summary_counts || {};
+      const hasHighConcern = counts.high_concern > 0;
+      const hasAllergens = ingredientAnalysis.allergens && ingredientAnalysis.allergens.length > 0;
+
+      if (hasHighConcern) {
+        overallStatus = 'review';
+        statusLabel = 'HIGH CONCERN ADDITIVES';
+      } else if (hasAllergens) {
+        overallStatus = 'review';
+        statusLabel = 'ALLERGEN ALERT';
+      } else if (ingredientAnalysis.grade === 'A' || ingredientAnalysis.grade === 'B') {
+        overallStatus = 'verified';
+        statusLabel = 'CLEAN FORMULATION';
+      } else {
+        overallStatus = 'review';
+        statusLabel = 'PROCESSED FORMULATION';
+      }
+    } else {
+      // STANDARD LEGAL METROLOGY MODE:
+      const keysToCheck = ['netQuantity', 'mrpDeclaration', 'batchAndMfg', 'mfgDetails', 'consumerCare'];
+      let reviewCount = 0;
+
+      keysToCheck.forEach(k => {
+        const st = declarations[k].status;
+        if (st === 'review' || st === 'violation') reviewCount++;
+      });
+
+      if (reviewCount > 0 || (firstImg && firstImg.calibrated === false)) {
+        overallStatus = 'review';
+        statusLabel = 'NEEDS REVIEW / ADVISORY';
+        score = Math.max(75, 95 - (reviewCount * 5));
+      }
     }
 
     const now = new Date();
@@ -379,7 +405,7 @@
       qrId: qrVal,
       name: productName,
       brand: brandName,
-      category: 'Packaged Commodity (OCR Audited)',
+      category: isIngredientsMode ? '🌿 Ingredient & Allergen Rating' : 'Packaged Commodity (OCR Audited)',
       image: displayImage,
       manufacturer: mfrText,
       mfgAddress: mfrText,
@@ -402,6 +428,7 @@
       rawBackendVerdict: verdict,
       calibrated: firstImg ? firstImg.calibrated : false,
       ingredientAnalysis: ingredientAnalysis,
+      scanMode: mode,
       userId: (user && user.id) || (currentUser && currentUser.id) || (verdict && verdict.user_id) || null,
       userEmail: (user && user.email) || (currentUser && currentUser.email) || (verdict && verdict.user_email) || null
     };

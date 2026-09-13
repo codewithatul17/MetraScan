@@ -333,29 +333,62 @@
   let currentScannerMode = 'standard';
 
   /**
-   * Initialize Product Scanner & Camera
+   * Switch Active Scanner Mode (Standard / Legal Metrology vs. Ingredients & Allergens)
    */
-  function initScanner(params) {
-    currentScannerMode = (params && params.mode) || 'standard';
-    const video = document.getElementById('camera-preview-video');
-    const statusNotice = document.getElementById('scanner-status-notice');
+  function setScannerMode(mode) {
+    currentScannerMode = mode || 'standard';
+    const pillLegal = document.getElementById('pill-mode-legal');
+    const pillIngredients = document.getElementById('pill-mode-ingredients');
     const navTitle = document.querySelector('.scanner-nav-title');
     const guidanceText = document.getElementById('guidance-text');
     const guidanceIcon = document.getElementById('guidance-icon');
     const frameBox = document.getElementById('scanner-frame-box');
+    const statusNotice = document.getElementById('scanner-status-notice');
 
     if (currentScannerMode === 'ingredients') {
-      if (navTitle) navTitle.textContent = '🌿 Scan Ingredients & Additives';
+      if (pillIngredients) {
+        pillIngredients.classList.add('active', 'mode-ing');
+      }
+      if (pillLegal) {
+        pillLegal.classList.remove('active');
+      }
+      if (navTitle) navTitle.textContent = '🌿 Scan Ingredients & Allergens';
       if (guidanceText) guidanceText.textContent = 'Position ingredients & additives panel inside frame';
       if (guidanceIcon) guidanceIcon.textContent = '🌿';
       if (frameBox) frameBox.classList.add('scanner-frame-ingredients');
-      MetraScan.App.showToast('🌿 Ingredients Scan Mode Active — Align ingredients panel', 'info', 2500);
+      if (statusNotice) {
+        statusNotice.textContent = '🌿 Ingredients & Allergen Scanner active. Point at back ingredients list.';
+        statusNotice.className = 'scanner-status-banner status-live';
+        statusNotice.style.display = 'inline-flex';
+      }
     } else {
+      if (pillLegal) {
+        pillLegal.classList.add('active');
+      }
+      if (pillIngredients) {
+        pillIngredients.classList.remove('active', 'mode-ing');
+      }
       if (navTitle) navTitle.textContent = 'Scan Product';
       if (guidanceText) guidanceText.textContent = 'Position product inside frame';
       if (guidanceIcon) guidanceIcon.textContent = '⛶';
       if (frameBox) frameBox.classList.remove('scanner-frame-ingredients');
+      if (statusNotice) {
+        statusNotice.textContent = 'Live camera active. Point at package label.';
+        statusNotice.className = 'scanner-status-banner status-live';
+        statusNotice.style.display = 'inline-flex';
+      }
     }
+  }
+
+  /**
+   * Initialize Product Scanner & Camera
+   */
+  function initScanner(params) {
+    const targetMode = (params && params.mode) || 'standard';
+    setScannerMode(targetMode);
+
+    const video = document.getElementById('camera-preview-video');
+    const statusNotice = document.getElementById('scanner-status-notice');
 
     // Attempt browser camera access
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -385,7 +418,7 @@
         }
         if (statusNotice) {
           statusNotice.textContent = currentScannerMode === 'ingredients'
-            ? 'Live camera active. Point at back ingredients & nutrition panel.'
+            ? '🌿 Ingredients scanner active. Point camera at ingredients & additives list.'
             : 'Live camera active. Point at package label.';
           statusNotice.className = 'scanner-status-banner status-live';
           statusNotice.style.display = 'inline-flex';
@@ -433,6 +466,22 @@
    * Set up Scanner Interactive Events
    */
   function setupScannerEvents() {
+    // Mode Switcher Pills (Legal Metrology vs. Ingredients)
+    const pillLegal = document.getElementById('pill-mode-legal');
+    const pillIngredients = document.getElementById('pill-mode-ingredients');
+    if (pillLegal) {
+      pillLegal.onclick = function() {
+        setScannerMode('standard');
+        MetraScan.App.showToast('⚖️ Switched to Legal Metrology Pack Audit Mode', 'info', 1800);
+      };
+    }
+    if (pillIngredients) {
+      pillIngredients.onclick = function() {
+        setScannerMode('ingredients');
+        MetraScan.App.showToast('🌿 Switched to Ingredients & Allergen Audit Mode', 'info', 1800);
+      };
+    }
+
     // Scanner mode tabs (Back of Pack vs Barcode)
     const tabBop = document.getElementById('tab-scan-bop');
     const tabBarcode = document.getElementById('tab-scan-barcode');
@@ -488,7 +537,7 @@
         if (e.target.files && e.target.files[0]) {
           const file = e.target.files[0];
           const localUrl = URL.createObjectURL(file);
-          processRealScan(file, file.name, localUrl);
+          processRealScan(file, file.name, localUrl, currentScannerMode);
           galleryInput.value = ''; // Reset input so same file can be re-selected if needed
         }
       };
@@ -515,7 +564,7 @@
         }
         const file = MetraScan.API.dataUrlToFile(photoUrl, 'live-captured-label.jpg');
         if (file) {
-          processRealScan(file, 'Live Camera Scan', photoUrl);
+          processRealScan(file, 'Live Camera Scan', photoUrl, currentScannerMode);
         } else {
           MetraScan.App.showToast('Could not convert camera frame to file.', 'error');
         }
@@ -545,23 +594,32 @@
 
   /**
    * Process Real Label Photo Scan with FastAPI OCR Backend
-   * Extracts real text, verifies statutory declarations, and rejects non-products without ambiguous data.
+   * In standard mode: Audits Rule 6(1) declarations (MRP, Net Qty, Mfg Date, etc.)
+   * In ingredients mode: ONLY scans ingredients, rates formulation, and checks allergens (no legal checks).
    */
-  async function processRealScan(file, sourceName, photoUrl) {
+  async function processRealScan(file, sourceName, photoUrl, scanMode) {
     if (!file) return;
+
+    const activeMode = scanMode || currentScannerMode || 'standard';
+    const isIngredientsMode = (activeMode === 'ingredients');
 
     // Show direct processing overlay so user is never stuck
     const procOverlay = document.getElementById('scanner-processing-overlay');
     const procStatus = document.getElementById('scanner-processing-status');
-    if (procOverlay) procOverlay.style.display = 'flex';
-    if (procStatus) procStatus.textContent = 'Scanning captured packaging with AI OCR Engine...';
+    const procTitle = document.querySelector('.scanner-processing-card .processing-title');
+    const procIcon = document.querySelector('.scanner-processing-card .processing-icon');
 
-    MetraScan.App.showToast('🔍 Analyzing label for Legal Metrology declarations...', 'info', 3000);
+    if (procOverlay) procOverlay.style.display = 'flex';
+    if (procIcon) procIcon.textContent = isIngredientsMode ? '🌿' : '⚖️';
+    if (procTitle) procTitle.textContent = isIngredientsMode ? 'Auditing Ingredients & Allergens' : 'Auditing Statutory Declarations';
+    if (procStatus) procStatus.textContent = isIngredientsMode ? 'Extracting ingredients panel and checking allergens...' : 'Scanning captured packaging with AI OCR Engine...';
+
+    MetraScan.App.showToast(isIngredientsMode ? '🌿 Analyzing ingredients, health score & allergens...' : '🔍 Analyzing label for Legal Metrology declarations...', 'info', 3000);
 
     const currentUser = MetraScan.Auth.getCurrentUser();
 
     try {
-      if (procStatus) procStatus.textContent = 'Extracting packaging declarations & checking compliance...';
+      if (procStatus) procStatus.textContent = isIngredientsMode ? 'Evaluating additives & detecting food allergens...' : 'Extracting packaging declarations & checking compliance...';
 
       const response = await MetraScan.API.scanImages([file], currentUser);
       
@@ -577,27 +635,62 @@
       const scanData = response.data;
       const verdict = scanData.verdict || {};
 
-      // Check whether real statutory packaging declarations were actually detected
-      const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care', 'country_of_origin'].some(k => {
-        return verdict[k] && (verdict[k].found || (verdict[k].clean_value && String(verdict[k].clean_value).trim().length > 0) || (verdict[k].text && String(verdict[k].text).trim().length > 0));
-      });
-      const hasGenericName = verdict.generic_name && (verdict.generic_name.found || (verdict.generic_name.text && String(verdict.generic_name.text).trim().length > 0));
-      const hasIngredients = verdict.ingredient_analysis && verdict.ingredient_analysis.found;
-      const isValidProduct = scanData.is_valid_product || hasDeclarations || hasGenericName || hasIngredients;
+      let isValidScan = false;
 
-      // If NO statutory packaging declarations were detected:
-      if (!isValidProduct) {
-        if (procOverlay) procOverlay.style.display = 'none';
-        MetraScan.App.playScanBeep(false);
-        MetraScan.App.showToast('⚠️ Verification Rejected — Package non-compliant with Rule 6(1)', 'error', 4000);
-        MetraScan.App.showInvalidScanModal(scanData, sourceName || file.name, photoUrl, false);
-        return;
+      if (isIngredientsMode) {
+        // INGREDIENTS ONLY MODE:
+        // Strictly check for ingredients, additives, allergens, or readable OCR text from the panel.
+        // DO NOT require or validate Legal Metrology Rule 6(1) declarations (MRP, Net Qty, Mfg Date, etc.)!
+        const ingData = verdict.ingredient_analysis || scanData.ingredient_analysis;
+        const hasIngData = ingData && (ingData.found || (ingData.raw_text && ingData.raw_text.trim().length > 0));
+        const totalOcrBoxes = scanData.total_ocr_boxes || (scanData.images && scanData.images.reduce((sum, img) => sum + (img.ocr_boxes_count || 0), 0)) || 0;
+        
+        isValidScan = Boolean(hasIngData || totalOcrBoxes >= 1 || (scanData.raw_text && scanData.raw_text.length > 0));
+
+        if (!isValidScan) {
+          if (procOverlay) procOverlay.style.display = 'none';
+          MetraScan.App.playScanBeep(false);
+          MetraScan.App.showToast('🌿 No ingredient list detected. Please point camera directly at the packaging ingredients table.', 'warning', 4500);
+          return;
+        }
+      } else {
+        // STANDARD / LEGAL AUDIT MODE:
+        const hasDeclarations = ['mrp', 'net_quantity', 'mfg_date', 'manufacturer', 'consumer_care', 'country_of_origin'].some(k => {
+          return verdict[k] && (verdict[k].found || (verdict[k].clean_value && String(verdict[k].clean_value).trim().length > 0) || (verdict[k].text && String(verdict[k].text).trim().length > 0));
+        });
+        const hasGenericName = verdict.generic_name && (verdict.generic_name.found || (verdict.generic_name.text && String(verdict.generic_name.text).trim().length > 0));
+        const hasIngredients = verdict.ingredient_analysis && verdict.ingredient_analysis.found;
+        isValidScan = scanData.is_valid_product || hasDeclarations || hasGenericName || hasIngredients;
+
+        if (!isValidScan) {
+          if (procOverlay) procOverlay.style.display = 'none';
+          MetraScan.App.playScanBeep(false);
+          MetraScan.App.showToast('⚠️ Verification Rejected — Package non-compliant with Rule 6(1)', 'error', 4000);
+          MetraScan.App.showInvalidScanModal(scanData, sourceName || file.name, photoUrl, false);
+          return;
+        }
       }
 
-      // Valid product detected — ONLY map the genuine detected data!
-      const product = MetraScan.API.mapVerdictToProduct(scanData, sourceName || file.name, currentUser, photoUrl);
+      // Valid scan detected — ONLY map the genuine detected data!
+      const product = MetraScan.API.mapVerdictToProduct(scanData, sourceName || file.name, currentUser, photoUrl, activeMode);
       if (scanData.supabase_id) {
         product.supabaseId = scanData.supabase_id;
+      }
+      product.scanMode = activeMode;
+
+      if (isIngredientsMode) {
+        product.category = '🌿 Ingredient & Allergen Rating';
+        const ing = product.ingredientAnalysis || {};
+        if (ing.grade === 'E' || (ing.summary_counts && ing.summary_counts.high_concern > 0)) {
+          product.status = 'review';
+          product.statusLabel = 'HIGH CONCERN ADDITIVES';
+        } else if (ing.allergens && ing.allergens.length > 0) {
+          product.status = 'review';
+          product.statusLabel = 'ALLERGEN ALERT';
+        } else {
+          product.status = 'verified';
+          product.statusLabel = 'CLEAN FORMULATION';
+        }
       }
 
       // Save strictly to this user's repository and history
@@ -605,14 +698,14 @@
       MetraScan.App.addScanToHistory(product.id);
 
       // Sound and visual feedback
-      MetraScan.App.playScanBeep(product.status !== 'violation');
+      MetraScan.App.playScanBeep(true);
 
       const laser = document.querySelector('.scanner-laser');
       if (laser) laser.classList.add('scanner-laser-matched');
-      const frame = document.querySelector('.scanner-frame');
+      const frame = document.querySelector('.scanner-frame') || document.getElementById('scanner-frame-box');
       if (frame) frame.classList.add('scanner-frame-success');
 
-      if (procStatus) procStatus.textContent = '✓ Verification Complete! Loading real audit findings...';
+      if (procStatus) procStatus.textContent = isIngredientsMode ? '✓ Ingredient & Allergen Analysis Complete!' : '✓ Verification Complete! Loading real audit findings...';
 
       // Transition to verification screen
       setTimeout(function() {
@@ -621,7 +714,7 @@
         if (frame) frame.classList.remove('scanner-frame-success');
         stopCamera();
         stopAlignmentAnalyzer();
-        MetraScan.Nav.navigateTo('consumer-verification', { productId: product.id });
+        MetraScan.Nav.navigateTo('consumer-verification', { productId: product.id, mode: activeMode });
       }, 450);
 
     } catch (err) {
@@ -675,7 +768,7 @@
           // Convert captured canvas screenshot into a real File and submit to backend
           const file = MetraScan.API.dataUrlToFile(photoUrl, 'live-captured-label.jpg');
           if (file) {
-            processRealScan(file, 'Live Camera Capture');
+            processRealScan(file, 'Live Camera Capture', photoUrl, currentScannerMode);
           } else {
             MetraScan.App.showToast('Could not convert camera frame to file.', 'error');
           }
@@ -739,48 +832,111 @@
     }
 
     const isSaved = MetraScan.App.isProductSaved(product.id);
+    const isIngredientsMode = Boolean(product.scanMode === 'ingredients' || (product.category && product.category.includes('Ingredient')));
+
+    // Update screen header title if present
+    const headerTitleEl = document.querySelector('#screen-consumer-verification .app-header h3');
+    if (headerTitleEl) {
+      headerTitleEl.textContent = isIngredientsMode ? '🌿 Ingredient & Allergen Rating' : 'Product Verification';
+    }
+
+    const ing = product.ingredientAnalysis || {};
+    const ingScore = (ing.score !== null && ing.score !== undefined) ? ing.score : 85;
+    const ingGrade = ing.grade || 'A';
+    const counts = ing.summary_counts || {};
+    const hasAllergens = Boolean(ing.allergens && ing.allergens.length > 0);
+    const hasHighConcern = Boolean(counts.high_concern && counts.high_concern > 0);
 
     // Build status banner
     let statusBannerHtml = '';
-    if (product.status === 'verified') {
+    if (isIngredientsMode) {
+      let bannerClass = 'status-verified';
+      let icon = '🌿';
+      let bannerTitle = 'CLEAN FORMULATION RATING';
+      let bannerSub = ing.rating_title || 'Ingredient & Additive Safety Verified';
+
+      if (hasHighConcern) {
+        bannerClass = 'status-violation';
+        icon = '🚨';
+        bannerTitle = 'HAZARDOUS / HIGH CONCERN ADDITIVES';
+        bannerSub = `${counts.high_concern} high-concern chemical additive(s) flagged in formulation`;
+      } else if (hasAllergens) {
+        bannerClass = 'status-review';
+        icon = '🌾';
+        bannerTitle = `ALLERGEN NOTICE · ${ing.allergens.length} DETECTED`;
+        bannerSub = 'Formulation contains recognized common food allergens';
+      } else if (ingGrade === 'A' || ingGrade === 'B') {
+        bannerClass = 'status-verified';
+        icon = '✓';
+        bannerTitle = `CLEAN LABEL · GRADE ${ingGrade}`;
+        bannerSub = (ing.rating_title || 'Wholesome Formulation') + ' — Safe additive profile';
+      } else {
+        bannerClass = 'status-review';
+        icon = '⚠️';
+        bannerTitle = `PROCESSED FORMULATION · GRADE ${ingGrade}`;
+        bannerSub = ing.rating_title || 'Standard processed commodity formulation';
+      }
+
+      const gaugeFill = ingGrade === 'A' ? 'fill-success' : (ingGrade === 'B' ? 'fill-info' : (ingGrade === 'C' ? 'fill-warning' : 'fill-danger'));
+      const gaugeText = ingGrade === 'A' ? 'text-success' : (ingGrade === 'B' ? 'text-info' : (ingGrade === 'C' ? 'text-warning' : 'text-danger'));
+
       statusBannerHtml = `
-        <div class="verification-status-card status-verified">
-          <div class="status-badge-icon">✓</div>
+        <div class="verification-status-card ${bannerClass}">
+          <div class="status-badge-icon">${icon}</div>
           <div class="status-badge-text">
-            <h3>VERIFIED COMPLIANT</h3>
-            <p>Certified under Legal Metrology Act (2009) & Packaged Commodities Rules</p>
+            <h3>${bannerTitle}</h3>
+            <p>${bannerSub}</p>
           </div>
-          <div class="radial-gauge-box" title="Compliance Score: ${product.score || 98}%">
+          <div class="radial-gauge-box" title="Clean Label Health Score: ${ingScore}/100">
             <svg class="radial-gauge-svg" viewBox="0 0 36 36">
               <path class="radial-gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              <path class="radial-gauge-fill fill-success" stroke-dasharray="${product.score || 98}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="radial-gauge-fill ${gaugeFill}" stroke-dasharray="${ingScore}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
             </svg>
-            <div class="radial-gauge-center text-success">${product.score || 98}%</div>
-          </div>
-        </div>
-      `;
-    } else if (product.status === 'review') {
-      statusBannerHtml = `
-        <div class="verification-status-card status-review">
-          <div class="status-badge-icon">⚠</div>
-          <div class="status-badge-text">
-            <h3>NEEDS REVIEW / ADVISORY</h3>
-            <p>Advisory issued for minor declaration typography inconsistency</p>
-          </div>
-          <div class="radial-gauge-box" title="Compliance Score: ${product.score || 72}%">
-            <svg class="radial-gauge-svg" viewBox="0 0 36 36">
-              <path class="radial-gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              <path class="radial-gauge-fill fill-warning" stroke-dasharray="${product.score || 72}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            </svg>
-            <div class="radial-gauge-center text-warning">${product.score || 72}%</div>
+            <div class="radial-gauge-center ${gaugeText}">${ingScore}</div>
           </div>
         </div>
       `;
     } else {
-      statusBannerHtml = '';
+      if (product.status === 'verified') {
+        statusBannerHtml = `
+          <div class="verification-status-card status-verified">
+            <div class="status-badge-icon">✓</div>
+            <div class="status-badge-text">
+              <h3>VERIFIED COMPLIANT</h3>
+              <p>Certified under Legal Metrology Act (2009) & Packaged Commodities Rules</p>
+            </div>
+            <div class="radial-gauge-box" title="Compliance Score: ${product.score || 98}%">
+              <svg class="radial-gauge-svg" viewBox="0 0 36 36">
+                <path class="radial-gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="radial-gauge-fill fill-success" stroke-dasharray="${product.score || 98}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <div class="radial-gauge-center text-success">${product.score || 98}%</div>
+            </div>
+          </div>
+        `;
+      } else if (product.status === 'review') {
+        statusBannerHtml = `
+          <div class="verification-status-card status-review">
+            <div class="status-badge-icon">⚠</div>
+            <div class="status-badge-text">
+              <h3>NEEDS REVIEW / ADVISORY</h3>
+              <p>Advisory issued for minor declaration typography inconsistency</p>
+            </div>
+            <div class="radial-gauge-box" title="Compliance Score: ${product.score || 72}%">
+              <svg class="radial-gauge-svg" viewBox="0 0 36 36">
+                <path class="radial-gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="radial-gauge-fill fill-warning" stroke-dasharray="${product.score || 72}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <div class="radial-gauge-center text-warning">${product.score || 72}%</div>
+            </div>
+          </div>
+        `;
+      } else {
+        statusBannerHtml = '';
+      }
     }
 
-    // Build 9-Point Legal Metrology & FSSAI Statutory Declarations Audit Checklist
+    // Build 9-Point Legal Metrology & FSSAI Statutory Declarations Audit Checklist (for Legal Metrology mode)
     const decl = product.declarations || {};
     const declItems = [
       { key: 'productName', title: '1. Commodity Identity & Generic Name', desc: 'Common or generic commodity name prominently displayed on pack', data: decl.productName },
@@ -827,13 +983,10 @@
     });
 
     // Build Ingredient Health & Safety Scoring Card
-    const ing = product.ingredientAnalysis || {};
     let ingredientScoreCardHtml = '';
 
     if (ing.found && ing.score !== null) {
-      const grade = ing.grade || 'C';
-      const gradeClass = 'score-grade-' + grade.toLowerCase();
-      const counts = ing.summary_counts || {};
+      const gradeClass = 'score-grade-' + ingGrade.toLowerCase();
 
       // Build High Concern Additives warning box
       let highConcernHtml = '';
@@ -862,7 +1015,7 @@
 
       // Build Allergen Warning box
       let allergenHtml = '';
-      if (ing.allergens && ing.allergens.length > 0) {
+      if (hasAllergens) {
         let allergenChips = '';
         ing.allergens.forEach(function(al) {
           allergenChips += `<span class="ingredient-chip chip-allergen">${al.icon || '⚠️'} ${al.name}</span>`;
@@ -870,10 +1023,25 @@
         allergenHtml = `
           <div class="ingredient-alert-box ingredient-alert-warning">
             <div class="ingredient-alert-header">
-              <span>🌾 Allergen Notice (${ing.allergens.length})</span>
+              <span>🌾 Allergen Notice (${ing.allergens.length} Detected)</span>
             </div>
+            <p style="font-size: 0.78rem; margin: 4px 0 8px 0; color: #92400e;">
+              This formulation contains recognized food allergens that may trigger adverse reactions in sensitive individuals:
+            </p>
             <div class="ingredient-chip-container">
               ${allergenChips}
+            </div>
+          </div>
+        `;
+      } else if (isIngredientsMode) {
+        allergenHtml = `
+          <div class="ingredient-alert-box" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px 14px; border-radius: 8px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem;">
+              <span style="font-size: 1.15rem;">🛡️</span>
+              <span>No Common Food Allergens Detected</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #15803d; margin-top: 4px; line-height: 1.4;">
+              Screened against major allergens: Gluten/Wheat, Milk/Dairy, Peanuts, Tree Nuts, Soy, Egg, Fish, Shellfish & Sulphites. No matching allergen markers identified.
             </div>
           </div>
         `;
@@ -943,19 +1111,19 @@
                 <div style="font-size: 0.78rem; color: var(--text-muted);">AI Optical Formulation & Additive Safety Audit</div>
               </div>
             </div>
-            <span class="ingredient-header-badge badge ${grade === 'A' ? 'badge-success' : (grade === 'B' ? 'badge-info' : (grade === 'C' ? 'badge-warning' : 'badge-danger'))}">
-              Grade ${grade}
+            <span class="ingredient-header-badge badge ${ingGrade === 'A' ? 'badge-success' : (ingGrade === 'B' ? 'badge-info' : (ingGrade === 'C' ? 'badge-warning' : 'badge-danger'))}">
+              Grade ${ingGrade}
             </span>
           </div>
 
           <div class="ingredient-score-hero">
             <div class="ingredient-score-circle">
-              <span class="ingredient-score-num">${ing.score}</span>
+              <span class="ingredient-score-num">${ingScore}</span>
               <span class="ingredient-score-max">/ 100</span>
             </div>
             <div class="ingredient-score-info">
-              <span class="ingredient-grade-pill">Grade ${grade} · ${ing.rating_title}</span>
-              <p class="ingredient-rating-desc">${ing.rating_summary}</p>
+              <span class="ingredient-grade-pill">Grade ${ingGrade} · ${ing.rating_title || 'Clean Label Audit'}</span>
+              <p class="ingredient-rating-desc">${ing.rating_summary || 'Nutritional analysis of ingredients list.'}</p>
             </div>
           </div>
 
@@ -974,7 +1142,7 @@
             </div>
             <div class="ingredient-kpi-box">
               <span class="ingredient-kpi-label">Allergens</span>
-              <span class="ingredient-kpi-val ${counts.allergens > 0 ? 'text-warning' : 'text-success'}">${counts.allergens || 0}</span>
+              <span class="ingredient-kpi-val ${hasAllergens ? 'text-warning' : 'text-success'}">${counts.allergens || 0}</span>
             </div>
           </div>
 
@@ -998,15 +1166,15 @@
     } else {
       // Ingredients panel not captured in this image
       ingredientScoreCardHtml = `
-        <div class="ingredient-not-found-box">
-          <span class="ingredient-not-found-icon">🌿</span>
-          <h4>Ingredient Health & Safety Score</h4>
-          <p>
-            The ingredients declaration was not clearly captured on this surface of the packaging.
-            Scan the back-of-pack ingredients table for an instant additive risk analysis, allergen detection, and Clean Label Score (0–100).
+        <div class="ingredient-not-found-box" style="padding: 24px; text-align: center; background: #fff; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
+          <span class="ingredient-not-found-icon" style="font-size: 2.5rem;">🌿</span>
+          <h4 style="margin: 8px 0 4px 0;">Ingredients List Not Detected</h4>
+          <p style="font-size: 0.84rem; color: var(--text-muted); max-width: 380px; margin: 0 auto 16px auto;">
+            The camera could not detect a legible ingredients declaration on this surface of the packaging.
+            Re-scan the back-of-pack ingredients table or nutrition panel for instant additive and allergen rating.
           </p>
-          <button class="btn btn-outline btn-sm" data-navigate="consumer-scan">
-            <span class="btn-icon">📷</span> Scan Back / Ingredients Panel
+          <button class="btn btn-primary btn-sm" data-navigate="consumer-scan" data-params='{"mode":"ingredients"}'>
+            <span class="btn-icon">📷</span> Re-Scan Ingredients Panel
           </button>
         </div>
       `;
@@ -1019,18 +1187,25 @@
     if (isInspector) {
       actionsBarHtml = `
         <div class="verification-actions-bar verification-actions-inspector" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-          <button class="btn btn-primary btn-lg" id="btn-inspector-proceed-report" data-product-id="${product.id}" style="width: 100%; font-weight: 700; padding: 13px 18px; font-size: 0.95rem; background: #002B49; border-color: #002B49; box-shadow: 0 4px 12px rgba(0,43,73,0.25);">
-            <span class="btn-icon">⚖️</span>
-            <span>File Official Inspection Report & Seizure Notice</span>
-          </button>
+          ${isIngredientsMode ? `
+            <button class="btn btn-primary btn-lg" id="btn-inspector-proceed-report" data-product-id="${product.id}" style="width: 100%; font-weight: 700; padding: 13px 18px; font-size: 0.95rem; background: #059669; border-color: #059669; box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
+              <span class="btn-icon">🌿</span>
+              <span>Share Ingredient & Allergen Report</span>
+            </button>
+          ` : `
+            <button class="btn btn-primary btn-lg" id="btn-inspector-proceed-report" data-product-id="${product.id}" style="width: 100%; font-weight: 700; padding: 13px 18px; font-size: 0.95rem; background: #002B49; border-color: #002B49; box-shadow: 0 4px 12px rgba(0,43,73,0.25);">
+              <span class="btn-icon">⚖️</span>
+              <span>File Official Inspection Report & Seizure Notice</span>
+            </button>
+          `}
           <div style="display: flex; gap: 10px; width: 100%;">
             <button class="btn btn-outline" id="btn-inspector-view-cert" data-product-id="${product.id}" style="flex: 1; font-weight: 600;">
               <span class="btn-icon">📄</span>
               <span>Official Certificate</span>
             </button>
-            <button class="btn btn-outline" data-navigate="ministry-scan" style="flex: 1; font-weight: 600;">
+            <button class="btn btn-outline" data-navigate="consumer-scan" data-params='{"mode":"${isIngredientsMode ? 'ingredients' : 'standard'}"}' style="flex: 1; font-weight: 600;">
               <span class="btn-icon">📷</span>
-              <span>Re-Scan Package</span>
+              <span>${isIngredientsMode ? 'Re-Scan Ingredients' : 'Re-Scan Package'}</span>
             </button>
           </div>
         </div>
@@ -1044,19 +1219,88 @@
           </button>
           <button class="btn btn-danger-outline" id="btn-report-issue" data-product-id="${product.id}">
             <span class="btn-icon">⚠</span>
-            <span>Report Issue</span>
+            <span>${isIngredientsMode ? 'Report Allergen Issue' : 'Report Issue'}</span>
           </button>
         </div>
       `;
     }
 
+    // Dynamic Specs Grid (Legal Metrology vs. Ingredients & Allergens)
+    const specsGridHtml = isIngredientsMode ? `
+      <div class="product-specs-grid">
+        <div class="spec-box" style="border-left: 3px solid #10b981;">
+          <span class="spec-label">Clean Label Score</span>
+          <span class="spec-val" style="color: #059669; font-weight: 700;">${ingScore}/100 (Grade ${ingGrade})</span>
+        </div>
+        <div class="spec-box" style="border-left: 3px solid ${hasAllergens ? '#f59e0b' : '#10b981'};">
+          <span class="spec-label">Allergen Safety</span>
+          <span class="spec-val" style="color: ${hasAllergens ? '#b45309' : '#059669'}; font-weight: 700;">${hasAllergens ? ('⚠️ ' + ing.allergens.length + ' Flagged') : '✓ None Detected'}</span>
+        </div>
+        <div class="spec-box" style="border-left: 3px solid ${hasHighConcern ? '#ef4444' : '#64748b'};">
+          <span class="spec-label">Additives Audited</span>
+          <span class="spec-val" style="font-weight: 700;">${(ing.additives && ing.additives.length > 0) ? (ing.additives.length + ' INS Additives') : '✓ 0 Chemical Additives'}</span>
+        </div>
+        <div class="spec-box" style="border-left: 3px solid #8b5cf6;">
+          <span class="spec-label">Processing Level</span>
+          <span class="spec-val" style="font-weight: 700;">${(ing.upf_markers && ing.upf_markers.length > 0) ? ('🏭 ' + ing.upf_markers.length + ' UPF Markers') : '✓ Whole / Minimally Processed'}</span>
+        </div>
+      </div>
+    ` : `
+      <div class="product-specs-grid">
+        <div class="spec-box">
+          <span class="spec-label">Net Quantity</span>
+          <span class="spec-val">${product.netQuantity}</span>
+        </div>
+        <div class="spec-box">
+          <span class="spec-label">Maximum Retail Price</span>
+          <span class="spec-val highlight-mrp">${product.mrp}</span>
+        </div>
+        <div class="spec-box">
+          <span class="spec-label">Unit Sale Price</span>
+          <span class="spec-val">${product.unitSalePrice}</span>
+        </div>
+        <div class="spec-box">
+          <span class="spec-label">Mfg Date / Expiry</span>
+          <span class="spec-val">${product.mfgDate}${product.expDate && product.expDate !== 'Not detected on package' ? ' · Exp: ' + product.expDate : ''}</span>
+        </div>
+      </div>
+    `;
+
+    // Dynamic Badge Bar
+    const badgeBarHtml = isIngredientsMode ? `
+      <div class="product-badge-bar">
+        <span class="category-tag" style="background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25);">🌿 Clean Label & Allergen Audit</span>
+        <span class="batch-tag" style="background: rgba(59, 130, 246, 0.12); color: #2563eb;">Health Grade ${ingGrade}</span>
+        ${hasAllergens ? `<span class="batch-tag" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">⚠️ ${ing.allergens.length} Allergen(s)</span>` : `<span class="batch-tag" style="background: rgba(16, 185, 129, 0.15); color: #16a34a;">✓ Allergen Free</span>`}
+      </div>
+    ` : `
+      <div class="product-badge-bar">
+        <span class="category-tag">${product.category}</span>
+        ${product.batchNo && product.batchNo !== 'Not detected on package' ? `<span class="batch-tag">Batch: ${product.batchNo}</span>` : `<span class="batch-tag" style="background: rgba(100, 116, 139, 0.15); color: #64748b;">Batch: Not visible</span>`}
+      </div>
+    `;
+
+    // Mode Footnote / Legal Checklist
+    const modeFootnoteHtml = isIngredientsMode ? `
+      <div style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin: 16px 0 8px 0; padding: 10px 14px; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+        🌿 <strong>Ingredient & Allergen Audit Mode:</strong> Optical analysis evaluates clean label formulation, additive toxicity (INS/E-numbers), ultra-processed markers, and allergen risks. Statutory Legal Metrology declarations (MRP, Net Qty, Rule 6(1)) are not checked in this mode.
+      </div>
+    ` : `
+      <div class="declarations-checklist-container" style="margin-top: 18px;">
+        <div class="section-heading-row" style="margin-bottom: 10px;">
+          <h3 class="section-title">⚖️ Legal Metrology Statutory Audit</h3>
+          <span class="badge badge-info">9 Compliance Checks</span>
+        </div>
+        <div class="declaration-list">
+          ${declListHtml}
+        </div>
+      </div>
+    `;
+
     // Render Full Page
     container.innerHTML = `
       <div class="verification-hero">
-        <div class="product-badge-bar">
-          <span class="category-tag">${product.category}</span>
-          ${product.batchNo && product.batchNo !== 'Not detected on package' ? `<span class="batch-tag">Batch: ${product.batchNo}</span>` : `<span class="batch-tag" style="background: rgba(100, 116, 139, 0.15); color: #64748b;">Batch: Not visible</span>`}
-        </div>
+        ${badgeBarHtml}
         
         <div class="product-profile-card">
           <div class="product-profile-media">
@@ -1065,38 +1309,33 @@
           <div class="product-profile-details">
             <h2 class="product-title">${product.name}</h2>
             <p class="product-brand">${product.brand}</p>
-            <p class="product-manufacturer"><strong>Manufacturer:</strong> ${product.manufacturer}</p>
-            <p class="product-address">📍 ${product.mfgAddress}</p>
+            ${!isIngredientsMode ? `
+              <p class="product-manufacturer"><strong>Manufacturer:</strong> ${product.manufacturer}</p>
+              <p class="product-address">📍 ${product.mfgAddress}</p>
+            ` : `
+              <p class="product-manufacturer"><strong>Formulation Audit:</strong> Back-of-Pack Ingredients & Additives Table</p>
+            `}
             
-            <div class="product-specs-grid">
-              <div class="spec-box">
-                <span class="spec-label">Net Quantity</span>
-                <span class="spec-val">${product.netQuantity}</span>
-              </div>
-              <div class="spec-box">
-                <span class="spec-label">Maximum Retail Price</span>
-                <span class="spec-val highlight-mrp">${product.mrp}</span>
-              </div>
-              <div class="spec-box">
-                <span class="spec-label">Unit Sale Price</span>
-                <span class="spec-val">${product.unitSalePrice}</span>
-              </div>
-              <div class="spec-box">
-                <span class="spec-label">Mfg Date / Expiry</span>
-                <span class="spec-val">${product.mfgDate}${product.expDate && product.expDate !== 'Not detected on package' ? ' · Exp: ' + product.expDate : ''}</span>
-              </div>
-            </div>
+            ${specsGridHtml}
 
-            <div class="product-code-meta">
-              <span><strong>Barcode:</strong> ${product.barcode}</span>
-              <span><strong>MetraSeal QR:</strong> ${product.qrId}</span>
-            </div>
+            ${!isIngredientsMode ? `
+              <div class="product-code-meta">
+                <span><strong>Barcode:</strong> ${product.barcode}</span>
+                <span><strong>MetraSeal QR:</strong> ${product.qrId}</span>
+              </div>
+            ` : (product.barcode && product.barcode !== 'Not detected on scanned package' ? `
+              <div class="product-code-meta">
+                <span><strong>Barcode:</strong> ${product.barcode}</span>
+              </div>
+            ` : '')}
           </div>
         </div>
 
         ${statusBannerHtml}
 
         ${ingredientScoreCardHtml}
+
+        ${modeFootnoteHtml}
 
         ${actionsBarHtml}
       </div>
@@ -1106,10 +1345,14 @@
       const inspectorReportBtn = document.getElementById('btn-inspector-proceed-report');
       if (inspectorReportBtn) {
         inspectorReportBtn.onclick = function() {
-          MetraScan.Nav.navigateTo('ministry-inspection', {
-            productId: product.id,
-            location: 'Retail Inspection Point'
-          });
+          if (isIngredientsMode) {
+            MetraScan.App.showToast('🌿 Ingredient & allergen formulation report ready for export.', 'success');
+          } else {
+            MetraScan.Nav.navigateTo('ministry-inspection', {
+              productId: product.id,
+              location: 'Retail Inspection Point'
+            });
+          }
         };
       }
       const inspectorCertBtn = document.getElementById('btn-inspector-view-cert');
@@ -1213,7 +1456,12 @@
 
       let badgeClass = 'badge-success';
       let badgeText = '✓ Verified';
-      if (prod.status === 'review') {
+      if (prod.scanMode === 'ingredients') {
+        const ing = prod.ingredientAnalysis || {};
+        const grade = ing.grade || 'A';
+        badgeClass = (grade === 'A' || grade === 'B') ? 'badge-success' : (grade === 'C' ? 'badge-warning' : 'badge-danger');
+        badgeText = '🌿 Grade ' + grade;
+      } else if (prod.status === 'review') {
         badgeClass = 'badge-warning';
         badgeText = '⚠ Needs Review';
       } else if (prod.status === 'violation') {
@@ -1294,7 +1542,14 @@
 
       let badgeClass = 'badge-success';
       let badgeText = '✓ Verified';
-      if (prod.status === 'review') {
+      const isIngScan = (prod.scanMode === 'ingredients');
+      const ing = prod.ingredientAnalysis || {};
+      const ingGrade = ing.grade || 'A';
+
+      if (isIngScan) {
+        badgeClass = (ingGrade === 'A' || ingGrade === 'B') ? 'badge-success' : (ingGrade === 'C' ? 'badge-warning' : 'badge-danger');
+        badgeText = '🌿 Grade ' + ingGrade;
+      } else if (prod.status === 'review') {
         badgeClass = 'badge-warning';
         badgeText = '⚠ Needs Review';
       } else if (prod.status === 'violation') {
@@ -1309,8 +1564,8 @@
             <div class="saved-info">
               <span class="badge ${badgeClass}">${badgeText}</span>
               <h4 class="saved-title">${prod.name}</h4>
-              <p class="saved-mfr">${prod.manufacturer}</p>
-              <p class="saved-mrp">${prod.mrp}</p>
+              <p class="saved-mfr">${isIngScan ? '🌿 Formulation & Allergen Audit' : prod.manufacturer}</p>
+              <p class="saved-mrp">${isIngScan ? (ing.rating_title || 'Clean Label Score ' + (ing.score || 85) + '/100') : prod.mrp}</p>
             </div>
           </div>
           <div class="saved-card-actions">

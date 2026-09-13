@@ -2247,6 +2247,62 @@ a:hover {
   height: min(48vh, 360px) !important;
 }
 
+.scanner-frame-ingredients {
+  border-color: rgba(16, 185, 129, 0.85) !important;
+}
+.scanner-frame-ingredients .scanner-corner {
+  border-color: #10b981 !important;
+}
+.scanner-frame-ingredients .scanner-laser {
+  background: linear-gradient(90deg, transparent, #10b981, transparent) !important;
+  box-shadow: 0 0 16px #10b981 !important;
+}
+
+.scanner-mode-bar {
+  display: flex;
+  justify-content: center;
+  padding: 6px 12px;
+  z-index: 30;
+  position: relative;
+}
+
+.scanner-mode-toggle {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.85);
+  padding: 3px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.scanner-mode-pill {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.scanner-mode-pill.active {
+  background: #002B49;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.scanner-mode-pill.active.mode-ing {
+  background: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+}
+
 .bop-detect-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
